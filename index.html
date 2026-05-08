@@ -1130,12 +1130,15 @@
             if (typeof updateAgreeUI === 'function') updateAgreeUI();
             if (typeof updateAgreeInlineUI === 'function') updateAgreeInlineUI();
             
-            // 카드 선택 시 해외카드 영역이 펼쳐져 있다면 강제로 접기
-            const overseasCards = document.getElementById('overseasCardCompanies');
-            const toggleBtn = document.getElementById('toggleOverseasCards');
-            if (overseasCards && !overseasCards.classList.contains('hidden')) {
-                overseasCards.classList.add('hidden');
-                if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> <span>해외카드 더보기</span>';
+            // 카드 선택 시 해외카드 영역이 펼쳐져 있다면 강제로 접기 (단, 선택한 카드가 해외카드인 경우는 예외)
+            const overseasCodes = ['visa', 'master', 'jcb', 'unionpay'];
+            if (!overseasCodes.includes(code)) {
+                const overseasCards = document.getElementById('overseasCardCompanies');
+                const toggleBtn = document.getElementById('toggleOverseasCards');
+                if (overseasCards && !overseasCards.classList.contains('hidden')) {
+                    overseasCards.classList.add('hidden');
+                    if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> <span>해외카드 더보기</span>';
+                }
             }
             
             // 모든 카드사 버튼 비활성화
