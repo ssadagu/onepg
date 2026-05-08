@@ -1503,6 +1503,11 @@
             
             if (isChecked) {
                 form.classList.remove('hidden');
+                
+                // 현금영수증 폼이 켜질 때 화면 스크롤 자동 이동
+                setTimeout(() => {
+                    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
             } else {
                 form.classList.add('hidden');
             }
