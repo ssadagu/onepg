@@ -385,10 +385,62 @@
                 </div>
             </div>
 
-            <!-- 카드 정보 입력 화면 -->
+            <!-- 앱카드/결제수단 선택 화면 (추가) -->
+            <div id="appCardSelection" class="hidden animate-slide-left">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-2">
+                        <button onclick="backToCardCompany()" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="text-xl font-bold text-gray-800" id="appCardTitle">Samsung Card</h2>
+                    </div>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- 앱으로 결제 링크 -->
+                    <button class="w-full flex items-center justify-between py-1 text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        <span id="appPaymentLinkText">삼성카드 앱으로 결제</span>
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </button>
+
+                    <!-- 메인 앱카드 결제 (모니모/앱카드) -->
+                    <button onclick="showCardInfoForm()" class="w-full bg-[#F0F7FF] hover:bg-[#E5F1FF] rounded-3xl p-8 flex items-center justify-between transition-all group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center overflow-hidden">
+                                <div id="appCardIcon" class="text-blue-600 font-bold text-xl">m</div>
+                            </div>
+                            <div class="text-left">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xl font-bold text-gray-800" id="appCardName">monimo</span>
+                                    <span class="text-xl font-medium text-gray-800">pay 결제</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-1" id="appCardDesc">모니모 앱에서 만나는 삼성카드 앱카드</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all"></i>
+                    </button>
+
+                    <!-- 하단 보조 결제 수단 -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="showCardInfoForm()" class="bg-gray-50 hover:bg-gray-100 rounded-3xl p-6 text-left transition-all group">
+                            <span class="block font-bold text-gray-800 mb-1">다른결제</span>
+                            <span class="text-xs text-gray-400">일반/SMS/로그인결제</span>
+                        </button>
+                        <button onclick="selectCategory('easy')" class="bg-gray-50 hover:bg-gray-100 rounded-3xl p-6 text-left transition-all group">
+                            <span class="block font-bold text-gray-800 mb-1">간편결제</span>
+                            <span class="text-xs text-gray-400">PAYCO, 삼성페이</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 카드 정보 입력 화면 (기존에서 위치 이동 및 id 유지) -->
             <div id="cardInfoForm" class="hidden animate-slide-left">
                 <div class="flex items-center gap-2 mb-4">
-                    <button onclick="backToCardCompany()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+                    <button onclick="backToAppCard()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
                         <i class="fas fa-arrow-left"></i>
                     </button>
                     <div class="flex items-center gap-2">
@@ -899,8 +951,45 @@
             // 화면 전환
             setTimeout(() => {
                 document.getElementById('cardCompanySelection').classList.add('hidden');
-                document.getElementById('cardInfoForm').classList.remove('hidden');
+                
+                // 앱카드 선택 UI 업데이트
+                updateAppCardUI(name);
+                document.getElementById('appCardSelection').classList.remove('hidden');
             }, 200);
+        }
+
+        // 앱카드 UI 업데이트
+        function updateAppCardUI(cardName) {
+            const shortName = cardName.replace('카드', '');
+            document.getElementById('appCardTitle').textContent = cardName;
+            document.getElementById('appPaymentLinkText').textContent = `${cardName} 앱으로 결제`;
+            
+            // 앱카드별 정보 (예시)
+            const appInfo = {
+                '삼성카드': { appName: 'monimo', desc: '모니모 앱에서 만나는 삼성카드 앱카드', icon: 'm', color: 'text-blue-600' },
+                '현대카드': { appName: '현대카드', desc: '현대카드 앱에서 간편하게 결제', icon: 'H', color: 'text-black' },
+                '신한카드': { appName: '신한 SOL페이', desc: '신한 SOL페이로 빠르고 안전하게', icon: 'S', color: 'text-blue-800' },
+                'KB국민카드': { appName: 'KB Pay', desc: 'KB Pay로 더 편리해진 결제', icon: 'K', color: 'text-yellow-600' },
+                'default': { appName: `${shortName} 앱카드`, desc: `${shortName} 앱에서 간편하게 결제하세요`, icon: shortName.substring(0,1), color: 'text-gray-800' }
+            };
+            
+            const info = appInfo[cardName] || appInfo['default'];
+            document.getElementById('appCardName').textContent = info.appName;
+            document.getElementById('appCardDesc').textContent = info.desc;
+            document.getElementById('appCardIcon').textContent = info.icon;
+            document.getElementById('appCardIcon').className = `font-bold text-xl ${info.color}`;
+        }
+
+        // 앱카드에서 상세 정보 입력 폼으로
+        function showCardInfoForm() {
+            document.getElementById('appCardSelection').classList.add('hidden');
+            document.getElementById('cardInfoForm').classList.remove('hidden');
+        }
+
+        // 상세 정보 입력 폼에서 앱카드로 뒤로가기
+        function backToAppCard() {
+            document.getElementById('cardInfoForm').classList.add('hidden');
+            document.getElementById('appCardSelection').classList.remove('hidden');
         }
 
         // 카드사별 할부 옵션 업데이트
@@ -949,6 +1038,7 @@
 
         // 뒤로 가기 (카드사 선택 화면으로)
         function backToCardCompany() {
+            document.getElementById('appCardSelection').classList.add('hidden');
             document.getElementById('cardInfoForm').classList.add('hidden');
             document.getElementById('cardCompanySelection').classList.remove('hidden');
             
