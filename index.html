@@ -276,8 +276,8 @@
                 
                 <!-- 자주 사용하는 카드사 -->
                 <div class="mb-4">
-                    <p class="text-xs text-gray-500 mb-2 font-medium">주요 카드사</p>
-                    <div class="grid grid-cols-3 gap-2">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">카드사 선택</p>
+                    <div class="grid grid-cols-4 gap-2">
                         <button onclick="selectCardCompany('samsung', '삼성카드', '#1428A0')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
                             <div class="card-logo bg-[#1428A0] mb-2">삼성</div>
                             <span class="text-xs font-medium text-gray-700">삼성카드</span>
@@ -307,71 +307,73 @@
                             <div class="card-logo bg-[#009591] mb-2">하나</div>
                             <span class="text-xs font-medium text-gray-700">하나카드</span>
                         </button>
+
+                        <button onclick="selectCardCompany('bc', 'BC카드', '#E31D93')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-[#E31D93] mb-2">BC</div>
+                            <span class="text-xs font-medium text-gray-700">BC카드</span>
+                        </button>
+                        
+                        <button onclick="selectCardCompany('woori', '우리카드', '#0078D4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-[#0078D4] mb-2">우리</div>
+                            <span class="text-xs font-medium text-gray-700">우리카드</span>
+                        </button>
+                        
+                        <button onclick="selectCardCompany('nh', 'NH농협카드', '#006241')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-[#006241] mb-2">NH</div>
+                            <span class="text-xs font-medium text-gray-700">NH농협카드</span>
+                        </button>
+                        
+                        <button onclick="selectCardCompany('citi', '씨티카드', '#003B71')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-[#003B71] mb-2">씨티</div>
+                            <span class="text-xs font-medium text-gray-700">씨티카드</span>
+                        </button>
+                        
+                        <button onclick="selectCardCompany('kakao', '카카오뱅크', '#FFE100')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-[#FFE100] text-black mb-2">K</div>
+                            <span class="text-xs font-medium text-gray-700">카카오뱅크</span>
+                        </button>
+                        
+                        <button onclick="selectCardCompany('toss', '토스뱅크', '#0064FF')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-[#0064FF] mb-2">T</div>
+                            <span class="text-xs font-medium text-gray-700">토스뱅크</span>
+                        </button>
                     </div>
                 </div>
                 
-                <!-- 더보기 버튼 -->
-                <button id="toggleOtherCards" onclick="toggleOtherCardCompanies()" class="w-full py-3 mt-2 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 text-xs font-bold hover:bg-gray-50 hover:border-gray-200 transition-all flex items-center justify-center gap-2 mb-4">
+                <!-- 해외카드 더보기 버튼 -->
+                <button id="toggleOverseasCards" onclick="toggleOverseasCardCompanies()" class="w-full py-3 mt-2 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 text-xs font-bold hover:bg-gray-50 hover:border-gray-200 transition-all flex items-center justify-center gap-2 mb-4">
                     <i class="fas fa-chevron-down"></i>
-                    <span>카드사 더보기</span>
+                    <span>해외카드 더보기</span>
                 </button>
 
-                <div id="otherCardCompanies" class="hidden">
-                    <!-- 기타 카드사 -->
-                    <div class="mb-4">
-                        <p class="text-xs text-gray-500 mb-2 font-medium">기타 카드사</p>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="selectCardCompany('bc', 'BC카드', '#E31D93')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                                <div class="card-logo bg-[#E31D93] mb-2">BC</div>
-                                <span class="text-xs font-medium text-gray-700">BC카드</span>
-                            </button>
-                            
-                            <button onclick="selectCardCompany('woori', '우리카드', '#0078D4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                                <div class="card-logo bg-[#0078D4] mb-2">우리</div>
-                                <span class="text-xs font-medium text-gray-700">우리카드</span>
-                            </button>
-                            
-                            <button onclick="selectCardCompany('nh', 'NH농협카드', '#006241')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                                <div class="card-logo bg-[#006241] mb-2">NH</div>
-                                <span class="text-xs font-medium text-gray-700">NH농협카드</span>
-                            </button>
-                            
-                            <button onclick="selectCardCompany('citi', '씨티카드', '#003B71')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                                <div class="card-logo bg-[#003B71] mb-2">씨티</div>
-                                <span class="text-xs font-medium text-gray-700">씨티카드</span>
-                            </button>
-                            
-                            <button onclick="selectCardCompany('kakao', '카카오뱅크', '#FFE100')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                                <div class="card-logo bg-[#FFE100] text-black mb-2">K</div>
-                                <span class="text-xs font-medium text-gray-700">카카오뱅크</span>
-                            </button>
-                            
-                            <button onclick="selectCardCompany('toss', '토스뱅크', '#0064FF')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                                <div class="card-logo bg-[#0064FF] mb-2">T</div>
-                                <span class="text-xs font-medium text-gray-700">토스뱅크</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- 전용/체크카드 -->
-                    <div class="mb-4">
-                        <p class="text-xs text-gray-500 mb-2 font-medium">저축은행 / 기타</p>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="selectCardCompany('saemaeul', '새마을금고', '#00A651')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                                <div class="card-logo bg-[#00A651] mb-2">새마을</div>
-                                <span class="text-xs font-medium text-gray-700">새마을금고</span>
-                            </button>
-                            
-                            <button onclick="selectCardCompany('shinhyup', '신협', '#0055A4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                                <div class="card-logo bg-[#0055A4] mb-2">신협</div>
-                                <span class="text-xs font-medium text-gray-700">신협</span>
-                            </button>
-                            
-                            <button onclick="selectCardCompany('jeju', '제주은행', '#0078D4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                                <div class="card-logo bg-[#0078D4] mb-2">제주</div>
-                                <span class="text-xs font-medium text-gray-700">제주은행</span>
-                            </button>
-                        </div>
+                <div id="overseasCardCompanies" class="hidden mb-4">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">해외카드</p>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="selectCardCompany('visa', 'VISA', '#1434CB')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-white text-[#1434CB] border border-gray-200 mb-2 font-bold italic" style="font-size: 11px;">VISA</div>
+                            <span class="text-xs font-medium text-gray-700">VISA</span>
+                        </button>
+                        
+                        <button onclick="selectCardCompany('master', 'Master', '#FF5F00')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-white border border-gray-200 mb-2 relative overflow-hidden flex items-center justify-center">
+                                <div class="w-5 h-5 rounded-full bg-[#EB001B] absolute -ml-3 mix-blend-multiply opacity-90"></div>
+                                <div class="w-5 h-5 rounded-full bg-[#F79E1B] absolute ml-3 mix-blend-multiply opacity-90"></div>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700">Master</span>
+                        </button>
+                        
+                        <button onclick="selectCardCompany('jcb', 'JCB', '#004A97')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-white border border-gray-200 text-[#004A97] mb-2 font-bold" style="font-size: 11px;">JCB</div>
+                            <span class="text-xs font-medium text-gray-700">JCB</span>
+                        </button>
+                        
+                        <button onclick="selectCardCompany('unionpay', 'UnionPay', '#D80027')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                            <div class="card-logo bg-white border border-gray-200 mb-2 relative flex flex-col items-center justify-center">
+                                <span class="text-[#D80027] font-bold italic leading-none" style="font-size: 9px;">Union</span>
+                                <span class="text-[#004A97] font-bold italic leading-none" style="font-size: 9px;">Pay</span>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700">UnionPay</span>
+                        </button>
                     </div>
                 </div>
                 
@@ -1652,18 +1654,18 @@
             }
         });
 
-        // 카드사 더보기 토글
-        function toggleOtherCardCompanies() {
-            const otherCards = document.getElementById('otherCardCompanies');
-            const toggleBtn = document.getElementById('toggleOtherCards');
+        // 해외카드 더보기 토글
+        function toggleOverseasCardCompanies() {
+            const overseasCards = document.getElementById('overseasCardCompanies');
+            const toggleBtn = document.getElementById('toggleOverseasCards');
             
-            if (otherCards.classList.contains('hidden')) {
-                otherCards.classList.remove('hidden');
-                otherCards.classList.add('animate-fade-in');
+            if (overseasCards.classList.contains('hidden')) {
+                overseasCards.classList.remove('hidden');
+                overseasCards.classList.add('animate-fade-in');
                 toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> <span>접기</span>';
             } else {
-                otherCards.classList.add('hidden');
-                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> <span>카드사 더보기</span>';
+                overseasCards.classList.add('hidden');
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> <span>해외카드 더보기</span>';
             }
         }
 
