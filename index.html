@@ -394,15 +394,63 @@
                 </div>
             </div>
 
-            <!-- 앱카드/결제수단 선택 화면 (추가) -->
+            <!-- 할부 개월 선택 화면 (추가) -->
+            <div id="installmentSelection" class="hidden animate-slide-left">
+                <div class="flex items-center gap-2 mb-6">
+                    <button onclick="backToCardCompany()" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <div id="instCardLogo" class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold">삼성</div>
+                        <h2 class="text-lg font-bold text-gray-800" id="instCardName">삼성카드</h2>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-6 mb-6" style="border-radius: var(--radius-main);">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">할부 개월 선택</label>
+                    <select id="installmentSelectMain" class="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-[--cj-blue] focus:outline-none text-base bg-white transition-all cursor-pointer font-medium">
+                        <option value="0">일시불</option>
+                        <option value="2">2개월 (무이자)</option>
+                        <option value="3">3개월 (무이자)</option>
+                        <option value="5">5개월</option>
+                        <option value="6">6개월 (무이자)</option>
+                        <option value="12">12개월</option>
+                    </select>
+                    <p class="text-xs text-gray-400 mt-3 flex items-center gap-1">
+                        <i class="fas fa-info-circle"></i>
+                        5만원 이상 결제 시 할부 선택이 가능합니다.
+                    </p>
+                </div>
+
+                <button onclick="proceedToAppCard()" class="w-full bg-[--cj-blue] text-white font-bold py-4 transition-all hover:bg-[#003d7a] active:scale-[0.98]" style="border-radius: var(--radius-main);">
+                    다음
+                </button>
+            </div>
+
+            <!-- 앱카드/결제수단 선택 화면 (카드사 결제 페이지) -->
             <div id="appCardSelection" class="hidden animate-slide-left">
+                <!-- 헤더 -->
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-2">
-                        <button onclick="backToCardCompany()" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
+                        <button onclick="backToInstallment()" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
                             <i class="fas fa-arrow-left"></i>
                         </button>
-                     <!-- 메인 앱카드 결제 (모니모/앱카드) -->
-                    <button onclick="showCardInfoForm()" class="w-full bg-white border border-gray-100 hover:border-[--cj-blue] hover:bg-blue-50/30 p-8 flex items-center justify-between transition-all group" style="border-radius: var(--radius-main);">
+                        <h2 class="text-xl font-bold text-gray-800" id="appCardTitle">Samsung Card</h2>
+                    </div>
+                    <button onclick="closeModal()" class="text-gray-300 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- 앱으로 결제 링크 -->
+                    <button class="w-full flex items-center justify-between py-1 text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        <span id="appPaymentLinkText">삼성카드 앱으로 결제</span>
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </button>
+
+                    <!-- 메인 앱카드 결제 (모니모/앱카드) -->
+                    <button onclick="connectToCardApp()" class="w-full bg-white border border-gray-100 hover:border-[--cj-blue] hover:bg-blue-50/30 p-8 flex items-center justify-between transition-all group" style="border-radius: var(--radius-main);">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center overflow-hidden">
                                 <div id="appCardIcon" class="text-[--cj-blue] font-bold text-xl">m</div>
@@ -426,16 +474,6 @@
                         </button>
                         <button onclick="selectCategory('easy')" class="bg-white border border-gray-100 hover:border-gray-200 p-6 text-left transition-all group" style="border-radius: var(--radius-main);">
                             <span class="block font-bold text-gray-900 mb-1">간편결제</span>
-                            <span class="text-xs text-gray-400">PAYCO, 삼성페이</span>
-                        </button>
-                    </div>               <!-- 하단 보조 결제 수단 -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="showCardInfoForm()" class="bg-gray-50 hover:bg-gray-100 rounded-3xl p-6 text-left transition-all group">
-                            <span class="block font-bold text-gray-800 mb-1">다른결제</span>
-                            <span class="text-xs text-gray-400">일반/SMS/로그인결제</span>
-                        </button>
-                        <button onclick="selectCategory('easy')" class="bg-gray-50 hover:bg-gray-100 rounded-3xl p-6 text-left transition-all group">
-                            <span class="block font-bold text-gray-800 mb-1">간편결제</span>
                             <span class="text-xs text-gray-400">PAYCO, 삼성페이</span>
                         </button>
                     </div>
@@ -585,23 +623,10 @@
                             우리은행
                         </button>
                     </div>
-                    
                     <div class="mt-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">입금자명</label>
                         <input type="text" placeholder="입금자 이름" value="홍길동"
                             class="card-input w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base transition-all">
-                    </div>
-                    
-                    <div class="flex items-center gap-2 mt-2">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" class="checkbox-custom hidden" checked>
-                            <div class="w-5 h-5 rounded border-2 border-gray-300 flex items-center justify-center transition-all">
-                                <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <span class="ml-2 text-sm text-gray-600">현금영수증 발급</span>
-                        </label>
                     </div>
                 </div>
             </div>
@@ -696,59 +721,62 @@
             </div>
         </div>
 
-        <!-- 약관 동의 -->
-        <div class="px-6 py-4">
-            <div class="space-y-3">
-                <label class="flex items-start cursor-pointer group">
-                    <input type="checkbox" class="checkbox-custom hidden" id="agreeAll" onchange="toggleAllAgree()">
-                    <div class="w-5 h-5 rounded border-2 border-gray-300 flex items-center justify-center transition-all mt-0.5 group-hover:border-gray-400">
-                        <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <span class="text-sm font-bold text-gray-800">전체 동의</span>
-                        <p class="text-xs text-gray-500 mt-0.5">결제 서비스 이용을 위해 아래 약관에 모두 동의합니다.</p>
-                    </div>
-                </label>
-                
-                <div class="pl-8 space-y-2">
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" class="checkbox-custom hidden agree-item" onchange="checkAgree()">
-                        <div class="w-4 h-4 rounded border border-gray-300 flex items-center justify-center transition-all">
-                            <svg class="w-2.5 h-2.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- 약관 동의 및 결제 버튼 영역 (초기 숨김) -->
+        <div id="footerSection" class="hidden">
+            <!-- 약관 동의 -->
+            <div class="px-6 py-4">
+                <div class="space-y-3">
+                    <label class="flex items-start cursor-pointer group">
+                        <input type="checkbox" class="checkbox-custom hidden" id="agreeAll" onchange="toggleAllAgree()">
+                        <div class="w-5 h-5 rounded border-2 border-gray-300 flex items-center justify-center transition-all mt-0.5 group-hover:border-gray-400">
+                            <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                             </svg>
                         </div>
-                        <span class="ml-2 text-xs text-gray-600">[필수] 결제 서비스 이용약관</span>
-                        <button class="ml-auto text-xs text-gray-400 hover:text-gray-600" onclick="showTerms('payment')">보기</button>
+                        <div class="ml-3">
+                            <span class="text-sm font-bold text-gray-800">전체 동의</span>
+                            <p class="text-xs text-gray-500 mt-0.5">결제 서비스 이용을 위해 아래 약관에 모두 동의합니다.</p>
+                        </div>
                     </label>
                     
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" class="checkbox-custom hidden agree-item" onchange="checkAgree()">
-                        <div class="w-4 h-4 rounded border border-gray-300 flex items-center justify-center transition-all">
-                            <svg class="w-2.5 h-2.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
-                        <span class="ml-2 text-xs text-gray-600">[필수] 개인정보 수집 및 이용 동의</span>
-                        <button class="ml-auto text-xs text-gray-400 hover:text-gray-600" onclick="showTerms('privacy')">보기</button>
-                    </label>
+                    <div class="pl-8 space-y-2">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" class="checkbox-custom hidden agree-item" onchange="checkAgree()">
+                            <div class="w-4 h-4 rounded border border-gray-300 flex items-center justify-center transition-all">
+                                <svg class="w-2.5 h-2.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="ml-2 text-xs text-gray-600">[필수] 결제 서비스 이용약관</span>
+                            <button class="ml-auto text-xs text-gray-400 hover:text-gray-600" onclick="showTerms('payment')">보기</button>
+                        </label>
+                        
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" class="checkbox-custom hidden agree-item" onchange="checkAgree()">
+                            <div class="w-4 h-4 rounded border border-gray-300 flex items-center justify-center transition-all">
+                                <svg class="w-2.5 h-2.5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="ml-2 text-xs text-gray-600">[필수] 개인정보 수집 및 이용 동의</span>
+                            <button class="ml-auto text-xs text-gray-400 hover:text-gray-600" onclick="showTerms('privacy')">보기</button>
+                        </label>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 결제 버튼 -->
-        <div class="p-6 pt-2">
-            <button onclick="processPayment()" id="payBtn" class="w-full bg-[--cj-red] hover:bg-[#c11f17] text-white font-bold py-4 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-600/10 flex items-center justify-center gap-2" style="border-radius: var(--radius-main);">
-                <span id="btnText">125,000원 결제하기</span>
-                <div id="btnLoader" class="loader border-white border-t-transparent hidden"></div>
-            </button>
-            
-            <p class="text-center text-xs text-gray-400 mt-4">
-                <i class="fas fa-shield-alt mr-1"></i>
-                안전한 결제를 위해 SSL 암호화 통신을 사용합니다
-            </p>
+            <!-- 결제 버튼 -->
+            <div id="payBtnContainer" class="p-6 pt-2">
+                <button onclick="processPayment()" id="payBtn" class="w-full bg-[--cj-red] hover:bg-[#c11f17] text-white font-bold py-4 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-600/10 flex items-center justify-center gap-2" style="border-radius: var(--radius-main);">
+                    <span id="btnText">125,000원 결제하기</span>
+                    <div id="btnLoader" class="loader border-white border-t-transparent hidden"></div>
+                </button>
+                
+                <p class="text-center text-xs text-gray-400 mt-4">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    안전한 결제를 위해 SSL 암호화 통신을 사용합니다
+                </p>
+            </div>
         </div>
     </div>
 
@@ -771,14 +799,59 @@
         </div>
     </div>
 
-    <!-- 결제 진행 중 오버레이 -->
-    <div id="processingOverlay" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center animate-slide-up">
-            <div class="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
-                <div class="loader w-8 h-8 border-4"></div>
+    <!-- 앱 결제 연결 중 오버레이 -->
+    <div id="appConnectingOverlay" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[60] backdrop-blur-md">
+        <div class="bg-white p-10 max-w-sm w-full mx-4 text-center animate-slide-up" style="border-radius: var(--radius-main);">
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <!-- 로딩 애니메이션 -->
+                <div class="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-[--cj-blue] rounded-full border-t-transparent animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-mobile-alt text-3xl text-[--cj-blue]"></i>
+                </div>
             </div>
-            <h3 class="text-lg font-bold text-gray-800 mb-2">결제 처리 중</h3>
-            <p class="text-sm text-gray-600">잠시만 기다려주세요.<br>결제가 진행되고 있습니다.</p>
+            <h3 class="text-xl font-bold text-gray-900 mb-2" id="connectingTitle">카드사 앱 연결 중</h3>
+            <p class="text-gray-500 text-sm leading-relaxed" id="connectingDesc">
+                안전한 결제를 위해<br>
+                <span class="font-bold text-gray-800" id="connectingTarget">삼성카드</span> 앱으로 이동합니다.
+            </p>
+            
+            <div class="mt-8 pt-6 border-t border-gray-100">
+                <div class="flex items-center justify-center gap-4">
+                    <div class="w-1.5 h-1.5 rounded-full bg-[--cj-red] animate-bounce" style="animation-delay: 0s"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-[--cj-blue] animate-bounce" style="animation-delay: 0.2s"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-[--cj-yellow] animate-bounce" style="animation-delay: 0.4s"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 결제 완료 팝업 -->
+    <div id="successPopup" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[70] backdrop-blur-sm p-4">
+        <div class="bg-white max-w-sm w-full text-center p-8 animate-slide-up" style="border-radius: var(--radius-main);">
+            <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-check text-4xl text-green-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">결제 완료</h2>
+            <p class="text-gray-500 mb-8 leading-relaxed">
+                주문하신 상품의 결제가<br>
+                성공적으로 완료되었습니다.
+            </p>
+            
+            <div class="bg-gray-50 rounded-2xl p-5 mb-8 text-left space-y-3">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-500">결제금액</span>
+                    <span class="font-bold text-gray-900">125,000원</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-500">결제수단</span>
+                    <span id="successMethodName" class="font-medium text-gray-900">삼성카드 (일시불)</span>
+                </div>
+            </div>
+
+            <button onclick="finishProcess()" class="w-full bg-gray-900 text-white font-bold py-4 transition-all hover:bg-black" style="border-radius: var(--radius-main);">
+                확인
+            </button>
         </div>
     </div>
 
@@ -875,11 +948,13 @@
                 stepIndicator.classList.add('hidden');
             }
             
-            // 모든 폼 숨기기
+            // 모든 폼 및 카드 관련 화면 숨기기
             document.querySelectorAll('[id^="form-"]').forEach(form => {
                 form.classList.add('hidden');
             });
             document.getElementById('cardCompanySelection').classList.add('hidden');
+            document.getElementById('installmentSelection').classList.add('hidden');
+            document.getElementById('appCardSelection').classList.add('hidden');
             document.getElementById('cardInfoForm').classList.add('hidden');
             
             // 해당 폼 표시
@@ -903,10 +978,49 @@
             
             // 현금영수증 섹션 표시/숨김
             const receiptSection = document.getElementById('receiptSection');
-            if (['virtual'].includes(method)) {
+            if (['virtual', 'phone'].includes(method)) {
                 receiptSection.classList.remove('hidden');
             } else {
                 receiptSection.classList.add('hidden');
+            }
+
+            // 결제 버튼 텍스트 업데이트
+            updatePayButtonText(method);
+
+            // 하단 버튼 컨테이너 표시
+            document.getElementById('payBtnContainer').classList.remove('hidden');
+            
+            // 하단 영역 노출 여부 결정
+            const footerSection = document.getElementById('footerSection');
+            if (method === 'card') {
+                // 카드는 할부 선택 완료 전까지 숨김
+                footerSection.classList.add('hidden');
+            } else {
+                // 간편결제 및 기타 결제는 선택 즉시 노출
+                footerSection.classList.remove('hidden');
+            }
+        }
+
+        // 결제 버튼 텍스트 업데이트 함수
+        function updatePayButtonText(method) {
+            const btnText = document.getElementById('btnText');
+            const amount = "125,000";
+            
+            if (method === 'card') {
+                if (selectedCardCompany) {
+                    btnText.textContent = `${selectedCardCompany.name} ${amount}원 결제하기`;
+                } else {
+                    btnText.textContent = `${amount}원 결제하기`;
+                }
+            } else if (['kakao', 'naver', 'toss', 'payco'].includes(method)) {
+                const names = { kakao: '카카오페이', naver: '네이버페이', toss: '토스페이', payco: '페이코' };
+                btnText.textContent = `${names[method]} ${amount}원 결제하기`;
+            } else if (method === 'virtual') {
+                btnText.textContent = `가상계좌 ${amount}원 결제하기`;
+            } else if (method === 'phone') {
+                btnText.textContent = `휴대폰 ${amount}원 결제하기`;
+            } else {
+                btnText.textContent = `${amount}원 결제하기`;
             }
         }
 
@@ -934,8 +1048,14 @@
                 btn.classList.remove('selected');
             });
             
-            // 선택된 버튼 활성화
-            event.currentTarget.classList.add('selected');
+            // 선택된 버튼 활성화 (이벤트 객체를 통한 안전한 접근)
+            const ev = window.event || event;
+            if (ev && ev.currentTarget) {
+                ev.currentTarget.classList.add('selected');
+            } else if (ev && ev.target) {
+                const btn = ev.target.closest('.card-company-btn');
+                if (btn) btn.classList.add('selected');
+            }
             
             // 단계 인디케이터 업데이트
             document.getElementById('step1').querySelector('div').className = 'w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold z-10 relative';
@@ -950,17 +1070,50 @@
             document.getElementById('selectedCardLogo').style.backgroundColor = color;
             document.getElementById('selectedCardLogo').textContent = name.substring(0, 2);
             
+            document.getElementById('instCardName').textContent = name;
+            document.getElementById('instCardLogo').style.backgroundColor = color;
+            document.getElementById('instCardLogo').textContent = name.substring(0, 2);
+            
             // 카드사별 할부 혜택 업데이트
             updateInstallmentOptions(code);
             
             // 화면 전환
             setTimeout(() => {
                 document.getElementById('cardCompanySelection').classList.add('hidden');
+                document.getElementById('installmentSelection').classList.remove('hidden');
                 
-                // 앱카드 선택 UI 업데이트
-                updateAppCardUI(name);
-                document.getElementById('appCardSelection').classList.remove('hidden');
+                // 결제 버튼 텍스트 업데이트
+                updatePayButtonText('card');
             }, 200);
+        }
+
+        // 할부 선택 후 앱카드로 이동
+        function proceedToAppCard() {
+            const inst = document.getElementById('installmentSelectMain');
+            const instText = inst.options[inst.selectedIndex].text;
+            selectedCardCompany.installment = instText;
+            
+            document.getElementById('installmentSelection').classList.add('hidden');
+            
+            // 앱카드 선택 UI 업데이트
+            updateAppCardUI(selectedCardCompany.name);
+            document.getElementById('appCardSelection').classList.remove('hidden');
+
+            // 카드 앱 결제 단계에서는 하단 공통 결제 버튼 숨김 (중복 방지)
+            document.getElementById('payBtnContainer').classList.add('hidden');
+
+            // 할부 선택 완료 후 하단 영역 노출 (약관 동의용)
+            document.getElementById('footerSection').classList.remove('hidden');
+        }
+
+        // 할부 선택으로 뒤로 가기
+        function backToInstallment() {
+            document.getElementById('appCardSelection').classList.add('hidden');
+            document.getElementById('installmentSelection').classList.remove('hidden');
+            
+            // 다시 숨김
+            document.getElementById('footerSection').classList.add('hidden');
+            document.getElementById('payBtnContainer').classList.remove('hidden');
         }
 
         // 앱카드 UI 업데이트
@@ -989,6 +1142,56 @@
         function showCardInfoForm() {
             document.getElementById('appCardSelection').classList.add('hidden');
             document.getElementById('cardInfoForm').classList.remove('hidden');
+        }
+
+        // 카드사 앱 연결 시뮬레이션
+        function connectToCardApp(type = 'app') {
+            // 약관 동의 확인
+            if (!validateTerms()) return;
+            const overlay = document.getElementById('appConnectingOverlay');
+            const targetName = selectedCardCompany ? selectedCardCompany.name : '카드사';
+            
+            document.getElementById('connectingTarget').textContent = targetName;
+            
+            if (type === 'general') {
+                document.getElementById('connectingTitle').textContent = '결제 페이지 연결 중';
+                document.getElementById('connectingDesc').innerHTML = '안전한 결제를 위해<br><span class="font-bold text-gray-800">결제 전용 페이지</span>로 이동합니다.';
+            } else {
+                document.getElementById('connectingTitle').textContent = '카드사 앱 연결 중';
+                document.getElementById('connectingDesc').innerHTML = `안전한 결제를 위해<br><span class="font-bold text-gray-800">${targetName}</span> 앱으로 이동합니다.`;
+            }
+            
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            
+            // 시뮬레이션: 2.5초 후 완료 처리
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                
+                // 결제 성공 팝업 표시
+                showSuccessPopup();
+            }, 2500);
+        }
+
+        function showSuccessPopup() {
+            const popup = document.getElementById('successPopup');
+            const methodText = document.getElementById('successMethodName');
+            
+            if (currentMethod === 'card' && selectedCardCompany) {
+                methodText.textContent = `${selectedCardCompany.name} (${selectedCardCompany.installment})`;
+            } else {
+                const names = { kakao: '카카오페이', naver: '네이버페이', toss: '토스페이', payco: '페이코', virtual: '가상계좌', phone: '휴대폰' };
+                methodText.textContent = names[currentMethod] || '결제 수단';
+            }
+            
+            popup.classList.remove('hidden');
+            popup.classList.add('flex');
+        }
+
+        function finishProcess() {
+            // 종료 (새로고침 또는 닫기 시뮬레이션)
+            location.reload();
         }
 
         // 상세 정보 입력 폼에서 앱카드로 뒤로가기
@@ -1043,9 +1246,13 @@
 
         // 뒤로 가기 (카드사 선택 화면으로)
         function backToCardCompany() {
+            document.getElementById('installmentSelection').classList.add('hidden');
             document.getElementById('appCardSelection').classList.add('hidden');
             document.getElementById('cardInfoForm').classList.add('hidden');
             document.getElementById('cardCompanySelection').classList.remove('hidden');
+            
+            // 하단 영역 숨김
+            document.getElementById('footerSection').classList.add('hidden');
             
             // 단계 인디케이터 리셋
             resetCardSteps();
@@ -1199,6 +1406,27 @@
             modal.classList.remove('flex');
         }
 
+        // 약관 동의 검증 공통 함수
+        function validateTerms() {
+            const agreeItems = document.querySelectorAll('.agree-item');
+            const allAgreed = Array.from(agreeItems).every(item => item.checked);
+            
+            if (!allAgreed) {
+                alert('모든 필수 약관에 동의해주세요.');
+                
+                const modal = document.getElementById('paymentModal');
+                modal.classList.add('shake');
+                setTimeout(() => modal.classList.remove('shake'), 500);
+                
+                const firstUnchecked = Array.from(agreeItems).find(item => !item.checked);
+                if (firstUnchecked) {
+                    firstUnchecked.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return false;
+            }
+            return true;
+        }
+
         // 결제 처리
         function processPayment() {
             // 카드 결제 시 카드사 선택 확인
@@ -1208,29 +1436,16 @@
             }
             
             // 약관 동의 확인
-            const agreeItems = document.querySelectorAll('.agree-item');
-            const allAgreed = Array.from(agreeItems).every(item => item.checked);
-            
-            if (!allAgreed) {
-                const modal = document.getElementById('paymentModal');
-                modal.classList.add('shake');
-                setTimeout(() => modal.classList.remove('shake'), 500);
-                
-                const firstUnchecked = Array.from(agreeItems).find(item => !item.checked);
-                if (firstUnchecked) {
-                    firstUnchecked.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                return;
-            }
+            if (!validateTerms()) return;
             
             // 결제 처리 시작
             const btn = document.getElementById('payBtn');
             const btnText = document.getElementById('btnText');
             const btnLoader = document.getElementById('btnLoader');
-            const overlay = document.getElementById('processingOverlay');
+            const amount = "125,000원";
             
             btn.disabled = true;
-            btnText.textContent = '처리 중...';
+            btnText.textContent = '결제 요청 중...';
             btnLoader.classList.remove('hidden');
             
             // 단계 3으로 업데이트 (카드 결제의 경우)
@@ -1243,24 +1458,14 @@
                 document.getElementById('step3').classList.add('active');
             }
             
+            // 시뮬레이션: 1.5초 후 성공 팝업 표시
             setTimeout(() => {
-                overlay.classList.remove('hidden');
-                overlay.classList.add('flex');
+                btn.disabled = false;
+                btnText.textContent = `${amount} 결제하기`;
+                btnLoader.classList.add('hidden');
                 
-                setTimeout(() => {
-                    overlay.classList.add('hidden');
-                    overlay.classList.remove('flex');
-                    
-                    btn.disabled = false;
-                    btnText.textContent = '125,000원 결제하기';
-                    btnLoader.classList.add('hidden');
-                    
-                    const methodName = currentMethod === 'card' 
-                        ? `${selectedCardCompany.name}(${getMethodName(currentMethod)})`
-                        : getMethodName(currentMethod);
-                    
-                    alert(`결제가 완료되었습니다!\n\n주문번호: ORD-20240507-1234\n결제금액: 125,000원\n결제수단: ${methodName}`);
-                }, 2000);
+                // 성공 팝업 표시
+                showSuccessPopup();
             }, 1500);
         }
 
