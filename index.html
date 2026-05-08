@@ -53,11 +53,18 @@
         }
     </script>
     <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --cj-red: #E1251B;
+            --cj-yellow: #FBC000;
+            --cj-blue: #004B91;
+            --radius-main: 20px;
+        }
         
         body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Noto Sans KR', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #F8F9FA;
             min-height: 100vh;
         }
         
@@ -189,34 +196,36 @@
 <body class="flex items-center justify-center p-4">
 
     <!-- 메인 결제 모달 -->
-    <div id="paymentModal" class="w-full max-w-[480px] bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+    <div id="paymentModal" class="w-full max-w-[480px] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden animate-slide-up" style="border-radius: var(--radius-main);">
         
-        <!-- 헤더 -->
-        <div class="bg-gray-900 text-white p-6 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-primary opacity-10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-            <div class="relative z-10">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h1 class="text-xl font-bold mb-1">결제하기</h1>
-                        <p class="text-gray-400 text-sm">안전한 결제를 진행합니다</p>
+        <!-- 헤더 (CJ 뉴스룸 스타일) -->
+        <div class="bg-white border-b border-gray-100 p-6 relative">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="flex gap-0.5">
+                        <div class="w-2 h-2 rounded-full bg-[--cj-red]"></div>
+                        <div class="w-2 h-2 rounded-full bg-[--cj-blue]"></div>
+                        <div class="w-2 h-2 rounded-full bg-[--cj-yellow]"></div>
                     </div>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-white transition-colors p-1">
-                        <i class="fas fa-times text-lg"></i>
-                    </button>
+                    <span class="text-xs font-bold text-gray-400 tracking-widest">ONE PG</span>
                 </div>
-                
-                <!-- 결제 금액 -->
-                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-gray-300 text-sm">주문번호</span>
-                        <span class="text-sm font-mono">ORD-20240507-1234</span>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <span class="text-gray-300 text-sm">최종결제금액</span>
-                        <div class="text-right">
-                            <span class="text-3xl font-bold tracking-tight">125,000</span>
-                            <span class="text-lg font-medium ml-1">원</span>
-                        </div>
+                <button onclick="closeModal()" class="text-gray-300 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="mt-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-1">결제하기</h1>
+                <p class="text-gray-400 text-sm">안전하고 편리한 결제 서비스를 제공합니다</p>
+            </div>
+            
+            <!-- 결제 금액 배너 -->
+            <div class="mt-6 bg-gray-50 p-5" style="border-radius: var(--radius-main);">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500 text-sm font-medium">최종 결제금액</span>
+                    <div class="text-right">
+                        <span class="text-2xl font-bold text-[--cj-blue]">125,000</span>
+                        <span class="text-sm font-bold text-gray-900 ml-0.5">원</span>
                     </div>
                 </div>
             </div>
@@ -250,7 +259,7 @@
             </div>
             
             <!-- 카테고리 탭 -->
-            <div class="flex gap-1 p-1 bg-gray-100 rounded-2xl mb-6">
+            <div class="flex gap-1 p-1 bg-gray-50 rounded-2xl mb-6 border border-gray-100">
                 <button onclick="selectCategory('card')" id="cat-card" class="category-btn active flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
                     <i class="fas fa-credit-card text-xs"></i>
                     <span>카드</span>
@@ -392,38 +401,34 @@
                         <button onclick="backToCardCompany()" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
                             <i class="fas fa-arrow-left"></i>
                         </button>
-                        <h2 class="text-xl font-bold text-gray-800" id="appCardTitle">Samsung Card</h2>
-                    </div>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-
-                <div class="space-y-4">
-                    <!-- 앱으로 결제 링크 -->
-                    <button class="w-full flex items-center justify-between py-1 text-sm text-gray-400 hover:text-gray-600 transition-colors">
-                        <span id="appPaymentLinkText">삼성카드 앱으로 결제</span>
-                        <i class="fas fa-chevron-right text-xs"></i>
-                    </button>
-
-                    <!-- 메인 앱카드 결제 (모니모/앱카드) -->
-                    <button onclick="showCardInfoForm()" class="w-full bg-[#F0F7FF] hover:bg-[#E5F1FF] rounded-3xl p-8 flex items-center justify-between transition-all group">
+                     <!-- 메인 앱카드 결제 (모니모/앱카드) -->
+                    <button onclick="showCardInfoForm()" class="w-full bg-white border border-gray-100 hover:border-[--cj-blue] hover:bg-blue-50/30 p-8 flex items-center justify-between transition-all group" style="border-radius: var(--radius-main);">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center overflow-hidden">
-                                <div id="appCardIcon" class="text-blue-600 font-bold text-xl">m</div>
+                            <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center overflow-hidden">
+                                <div id="appCardIcon" class="text-[--cj-blue] font-bold text-xl">m</div>
                             </div>
                             <div class="text-left">
                                 <div class="flex items-center gap-1">
-                                    <span class="text-xl font-bold text-gray-800" id="appCardName">monimo</span>
-                                    <span class="text-xl font-medium text-gray-800">pay 결제</span>
+                                    <span class="text-xl font-bold text-gray-900" id="appCardName">monimo</span>
+                                    <span class="text-xl font-medium text-gray-900">pay 결제</span>
                                 </div>
                                 <p class="text-sm text-gray-400 mt-1" id="appCardDesc">모니모 앱에서 만나는 삼성카드 앱카드</p>
                             </div>
                         </div>
-                        <i class="fas fa-chevron-right text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all"></i>
+                        <i class="fas fa-chevron-right text-gray-200 group-hover:text-[--cj-blue] group-hover:translate-x-1 transition-all"></i>
                     </button>
 
                     <!-- 하단 보조 결제 수단 -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="showCardInfoForm()" class="bg-white border border-gray-100 hover:border-gray-200 p-6 text-left transition-all group" style="border-radius: var(--radius-main);">
+                            <span class="block font-bold text-gray-900 mb-1">다른결제</span>
+                            <span class="text-xs text-gray-400">일반/SMS/로그인결제</span>
+                        </button>
+                        <button onclick="selectCategory('easy')" class="bg-white border border-gray-100 hover:border-gray-200 p-6 text-left transition-all group" style="border-radius: var(--radius-main);">
+                            <span class="block font-bold text-gray-900 mb-1">간편결제</span>
+                            <span class="text-xs text-gray-400">PAYCO, 삼성페이</span>
+                        </button>
+                    </div>               <!-- 하단 보조 결제 수단 -->
                     <div class="grid grid-cols-2 gap-3">
                         <button onclick="showCardInfoForm()" class="bg-gray-50 hover:bg-gray-100 rounded-3xl p-6 text-left transition-all group">
                             <span class="block font-bold text-gray-800 mb-1">다른결제</span>
@@ -735,12 +740,12 @@
 
         <!-- 결제 버튼 -->
         <div class="p-6 pt-2">
-            <button onclick="processPayment()" id="payBtn" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 rounded-xl transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-gray-900/20 flex items-center justify-center gap-2">
+            <button onclick="processPayment()" id="payBtn" class="w-full bg-[--cj-red] hover:bg-[#c11f17] text-white font-bold py-4 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-600/10 flex items-center justify-center gap-2" style="border-radius: var(--radius-main);">
                 <span id="btnText">125,000원 결제하기</span>
-                <div id="btnLoader" class="loader hidden"></div>
+                <div id="btnLoader" class="loader border-white border-t-transparent hidden"></div>
             </button>
             
-            <p class="text-center text-xs text-gray-400 mt-3">
+            <p class="text-center text-xs text-gray-400 mt-4">
                 <i class="fas fa-shield-alt mr-1"></i>
                 안전한 결제를 위해 SSL 암호화 통신을 사용합니다
             </p>
