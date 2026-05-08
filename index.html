@@ -174,6 +174,16 @@
             font-size: 12px;
             color: white;
         }
+        .category-btn {
+            color: #6B7280;
+            background: transparent;
+        }
+        
+        .category-btn.active {
+            color: #3182F6;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
     </style>
 </head>
 <body class="flex items-center justify-center p-4">
@@ -234,66 +244,32 @@
 
         <!-- 결제 수단 선택 -->
         <div id="methodSelection" class="p-6 pb-2">
-            <h2 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">결제 수단</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">결제 수단</h2>
+                <span class="text-xs text-gray-400" id="categoryDesc">원하시는 결제 방식을 선택해주세요</span>
+            </div>
             
-            <div class="grid grid-cols-4 gap-2 mb-2">
-                <button onclick="selectMethod('card')" id="btn-card" class="payment-method-card active flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-2 text-primary">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-700">카드</span>
+            <!-- 카테고리 탭 -->
+            <div class="flex gap-1 p-1 bg-gray-100 rounded-2xl mb-6">
+                <button onclick="selectCategory('card')" id="cat-card" class="category-btn active flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-credit-card text-xs"></i>
+                    <span>카드</span>
                 </button>
-                
-                <button onclick="selectMethod('transfer')" id="btn-transfer" class="payment-method-card flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                    <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mb-2 text-green-600">
-                        <i class="fas fa-university"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-700">계좌이체</span>
+                <button onclick="selectCategory('easy')" id="cat-easy" class="category-btn flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-bolt text-xs"></i>
+                    <span>간편결제</span>
                 </button>
-                
-                <button onclick="selectMethod('virtual')" id="btn-virtual" class="payment-method-card flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mb-2 text-purple-600">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-700">가상계좌</span>
-                </button>
-                
-                <button onclick="selectMethod('phone')" id="btn-phone" class="payment-method-card flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                    <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center mb-2 text-orange-600">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-700">휴대폰</span>
+                <button onclick="selectCategory('other')" id="cat-other" class="category-btn flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-plus-circle text-xs"></i>
+                    <span>기타결제</span>
                 </button>
             </div>
             
-            <div class="grid grid-cols-4 gap-2">
-                <button onclick="selectMethod('kakao')" id="btn-kakao" class="payment-method-card flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                    <div class="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center mb-2 text-yellow-800">
-                        <i class="fas fa-comment"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-700">카카오페이</span>
-                </button>
-                
-                <button onclick="selectMethod('naver')" id="btn-naver" class="payment-method-card flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                    <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center mb-2 text-green-500">
-                        <i class="fas fa-n"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-700">네이버페이</span>
-                </button>
-                
-                <button onclick="selectMethod('toss')" id="btn-toss" class="payment-method-card flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-2 text-blue-500">
-                        <i class="fas fa-toss"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-700">토스페이</span>
-                </button>
-                
-                <button onclick="selectMethod('payco')" id="btn-payco" class="payment-method-card flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                    <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-2 text-red-500">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
-                    <span class="text-xs font-medium text-gray-700">페이코</span>
-                </button>
+            <!-- 간편결제/기타결제 하위 버튼 그리드 (카드가 아닐 때만 표시) -->
+            <div id="subMethodArea" class="hidden animate-fade-in mb-2">
+                <div id="subMethodGrid" class="grid grid-cols-4 gap-2">
+                    <!-- JS로 동적 생성 -->
+                </div>
             </div>
         </div>
 
@@ -343,60 +319,68 @@
                     </div>
                 </div>
                 
-                <!-- 기타 카드사 -->
-                <div class="mb-4">
-                    <p class="text-xs text-gray-500 mb-2 font-medium">기타 카드사</p>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="selectCardCompany('bc', 'BC카드', '#E31D93')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#E31D93] mb-2">BC</div>
-                            <span class="text-xs font-medium text-gray-700">BC카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('woori', '우리카드', '#0078D4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#0078D4] mb-2">우리</div>
-                            <span class="text-xs font-medium text-gray-700">우리카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('nh', 'NH농협카드', '#006241')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#006241] mb-2">NH</div>
-                            <span class="text-xs font-medium text-gray-700">NH농협카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('citi', '씨티카드', '#003B71')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#003B71] mb-2">씨티</div>
-                            <span class="text-xs font-medium text-gray-700">씨티카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('kakao', '카카오뱅크', '#FFE100')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#FFE100] text-black mb-2">K</div>
-                            <span class="text-xs font-medium text-gray-700">카카오뱅크</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('toss', '토스뱅크', '#0064FF')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#0064FF] mb-2">T</div>
-                            <span class="text-xs font-medium text-gray-700">토스뱅크</span>
-                        </button>
+                <!-- 더보기 버튼 -->
+                <button id="toggleOtherCards" onclick="toggleOtherCardCompanies()" class="w-full py-3 mt-2 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 text-xs font-bold hover:bg-gray-50 hover:border-gray-200 transition-all flex items-center justify-center gap-2 mb-4">
+                    <i class="fas fa-chevron-down"></i>
+                    <span>카드사 더보기</span>
+                </button>
+
+                <div id="otherCardCompanies" class="hidden">
+                    <!-- 기타 카드사 -->
+                    <div class="mb-4">
+                        <p class="text-xs text-gray-500 mb-2 font-medium">기타 카드사</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectCardCompany('bc', 'BC카드', '#E31D93')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="card-logo bg-[#E31D93] mb-2">BC</div>
+                                <span class="text-xs font-medium text-gray-700">BC카드</span>
+                            </button>
+                            
+                            <button onclick="selectCardCompany('woori', '우리카드', '#0078D4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="card-logo bg-[#0078D4] mb-2">우리</div>
+                                <span class="text-xs font-medium text-gray-700">우리카드</span>
+                            </button>
+                            
+                            <button onclick="selectCardCompany('nh', 'NH농협카드', '#006241')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="card-logo bg-[#006241] mb-2">NH</div>
+                                <span class="text-xs font-medium text-gray-700">NH농협카드</span>
+                            </button>
+                            
+                            <button onclick="selectCardCompany('citi', '씨티카드', '#003B71')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="card-logo bg-[#003B71] mb-2">씨티</div>
+                                <span class="text-xs font-medium text-gray-700">씨티카드</span>
+                            </button>
+                            
+                            <button onclick="selectCardCompany('kakao', '카카오뱅크', '#FFE100')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="card-logo bg-[#FFE100] text-black mb-2">K</div>
+                                <span class="text-xs font-medium text-gray-700">카카오뱅크</span>
+                            </button>
+                            
+                            <button onclick="selectCardCompany('toss', '토스뱅크', '#0064FF')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="card-logo bg-[#0064FF] mb-2">T</div>
+                                <span class="text-xs font-medium text-gray-700">토스뱅크</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- 전용/체크카드 -->
-                <div>
-                    <p class="text-xs text-gray-500 mb-2 font-medium">저축은행 / 기타</p>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="selectCardCompany('saemaeul', '새마을금고', '#00A651')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#00A651] mb-2">새마을</div>
-                            <span class="text-xs font-medium text-gray-700">새마을금고</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('shinhyup', '신협', '#0055A4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#0055A4] mb-2">신협</div>
-                            <span class="text-xs font-medium text-gray-700">신협</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('jeju', '제주은행', '#0078D4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#0078D4] mb-2">제주</div>
-                            <span class="text-xs font-medium text-gray-700">제주은행</span>
-                        </button>
+                    
+                    <!-- 전용/체크카드 -->
+                    <div class="mb-4">
+                        <p class="text-xs text-gray-500 mb-2 font-medium">저축은행 / 기타</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectCardCompany('saemaeul', '새마을금고', '#00A651')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="card-logo bg-[#00A651] mb-2">새마을</div>
+                                <span class="text-xs font-medium text-gray-700">새마을금고</span>
+                            </button>
+                            
+                            <button onclick="selectCardCompany('shinhyup', '신협', '#0055A4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="card-logo bg-[#0055A4] mb-2">신협</div>
+                                <span class="text-xs font-medium text-gray-700">신협</span>
+                            </button>
+                            
+                            <button onclick="selectCardCompany('jeju', '제주은행', '#0078D4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="card-logo bg-[#0078D4] mb-2">제주</div>
+                                <span class="text-xs font-medium text-gray-700">제주은행</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -742,21 +726,88 @@
     </div>
 
     <script>
+        let currentCategory = 'card';
         let currentMethod = 'card';
         let selectedCardCompany = null;
         let receiptType = 'personal';
+
+        // 페이지 로드 시 초기화
+        window.onload = function() {
+            selectCategory('card');
+        };
+
+        // 카테고리 선택
+        function selectCategory(category) {
+            currentCategory = category;
+            
+            // 카테고리 버튼 상태 업데이트
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`cat-${category}`).classList.add('active');
+            
+            const subMethodArea = document.getElementById('subMethodArea');
+            const subMethodGrid = document.getElementById('subMethodGrid');
+            const categoryDesc = document.getElementById('categoryDesc');
+            
+            if (category === 'card') {
+                subMethodArea.classList.add('hidden');
+                categoryDesc.textContent = '카드사를 선택해주세요';
+                selectMethod('card');
+            } else {
+                subMethodArea.classList.remove('hidden');
+                categoryDesc.textContent = category === 'easy' ? '사용하실 간편결제를 선택해주세요' : '결제 수단을 선택해주세요';
+                
+                // 하위 결제 수단 렌더링
+                renderSubMethods(category);
+                
+                // 첫 번째 수단 자동 선택 (선택 사항, 여기서는 첫 번째 수단으로 초기화)
+                const firstMethod = category === 'easy' ? 'kakao' : 'virtual';
+                selectMethod(firstMethod);
+            }
+        }
+
+        // 하위 결제 수단 렌더링
+        function renderSubMethods(category) {
+            const grid = document.getElementById('subMethodGrid');
+            let methods = [];
+            
+            if (category === 'easy') {
+                methods = [
+                    { id: 'kakao', name: '카카오페이', icon: 'fa-comment', color: 'bg-yellow-50 text-yellow-800' },
+                    { id: 'naver', name: '네이버페이', icon: 'fa-n', color: 'bg-green-50 text-green-500' },
+                    { id: 'toss', name: '토스페이', icon: 'fa-paper-plane', color: 'bg-blue-50 text-blue-600' },
+                    { id: 'payco', name: '페이코', icon: 'fa-shopping-bag', color: 'bg-red-50 text-red-500' }
+                ];
+            } else if (category === 'other') {
+                methods = [
+                    { id: 'virtual', name: '가상계좌', icon: 'fa-file-invoice-dollar', color: 'bg-purple-50 text-purple-600' },
+                    { id: 'phone', name: '휴대폰', icon: 'fa-mobile-alt', color: 'bg-orange-50 text-orange-600' }
+                ];
+            }
+            
+            grid.innerHTML = methods.map(m => `
+                <button onclick="selectMethod('${m.id}')" id="btn-${m.id}" class="payment-method-card group flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-gray-100 bg-white hover:border-primary/30 hover:bg-blue-50/30 transition-all duration-300">
+                    <div class="w-12 h-12 rounded-full ${m.color} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                        <i class="fas ${m.icon} text-lg"></i>
+                    </div>
+                    <span class="text-[11px] font-bold text-gray-600 group-hover:text-primary transition-colors">${m.name}</span>
+                </button>
+            `).join('');
+        }
 
         // 결제 수단 선택
         function selectMethod(method) {
             currentMethod = method;
             
-            // 모든 버튼 비활성화
+            // 모든 하위 버튼 비활성화
             document.querySelectorAll('.payment-method-card').forEach(btn => {
                 btn.classList.remove('active');
             });
             
-            // 선택된 버튼 활성화
-            document.getElementById(`btn-${method}`).classList.add('active');
+            // 선택된 버튼 활성화 (존재하는 경우)
+            const activeBtn = document.getElementById(`btn-${method}`);
+            if (activeBtn) activeBtn.classList.add('active');
             
             // 단계 인디케이터 표시/숨김
             const stepIndicator = document.getElementById('stepIndicator');
@@ -777,7 +828,6 @@
             // 해당 폼 표시
             const formMap = {
                 'card': 'cardCompanySelection',
-                'transfer': 'form-transfer',
                 'virtual': 'form-virtual',
                 'phone': 'form-phone',
                 'kakao': 'form-easy',
@@ -787,7 +837,7 @@
             };
             
             const targetForm = document.getElementById(formMap[method]);
-            targetForm.classList.remove('hidden');
+            if (targetForm) targetForm.classList.remove('hidden');
             
             // 간편결제 아이콘/제목 업데이트
             if (['kakao', 'naver', 'toss', 'payco'].includes(method)) {
@@ -796,7 +846,7 @@
             
             // 현금영수증 섹션 표시/숨김
             const receiptSection = document.getElementById('receiptSection');
-            if (['card', 'transfer', 'virtual'].includes(method)) {
+            if (['virtual'].includes(method)) {
                 receiptSection.classList.remove('hidden');
             } else {
                 receiptSection.classList.add('hidden');
@@ -1169,6 +1219,21 @@
                 btn.classList.add('border-orange-500', 'bg-orange-50');
             }
         });
+
+        // 카드사 더보기 토글
+        function toggleOtherCardCompanies() {
+            const otherCards = document.getElementById('otherCardCompanies');
+            const toggleBtn = document.getElementById('toggleOtherCards');
+            
+            if (otherCards.classList.contains('hidden')) {
+                otherCards.classList.remove('hidden');
+                otherCards.classList.add('animate-fade-in');
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> <span>접기</span>';
+            } else {
+                otherCards.classList.add('hidden');
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> <span>카드사 더보기</span>';
+            }
+        }
 
         // 모달 외부 클릭 시 닫기
         document.getElementById('termsModal').addEventListener('click', function(e) {
