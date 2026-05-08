@@ -928,6 +928,14 @@
         function selectCategory(category) {
             currentCategory = category;
             
+            // 모든 이용약관 동의 체크박스 해제 (초기화)
+            document.querySelectorAll('.agree-item, .agree-item-inline, #agreeAll, #agreeAllInline').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            // 약관 관련 UI(아이콘, 버튼 등) 상태 최신화
+            if (typeof updateAgreeUI === 'function') updateAgreeUI();
+            if (typeof updateAgreeInlineUI === 'function') updateAgreeInlineUI();
+            
             // 카테고리 버튼 상태 업데이트
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -949,9 +957,26 @@
                 // 하위 결제 수단 렌더링
                 renderSubMethods(category);
                 
-                // 첫 번째 수단 자동 선택 (선택 사항, 여기서는 첫 번째 수단으로 초기화)
-                const firstMethod = category === 'easy' ? 'kakao' : 'virtual';
-                selectMethod(firstMethod);
+                // 첫 번째 수단 자동 선택 (선택 사항)
+                if (category === 'other') {
+                    selectMethod('virtual');
+                } else if (category === 'easy') {
+                    // 간편결제의 경우 아무것도 선택되지 않도록 폼 초기화
+                    document.querySelectorAll('[id^="form-"]').forEach(form => {
+                        form.classList.add('hidden');
+                    });
+                    document.getElementById('receiptSection').classList.add('hidden');
+                    
+                    // 기존 카드 관련 화면 명시적 숨김
+                    document.getElementById('cardCompanySelection').classList.add('hidden');
+                    document.getElementById('installmentSelection').classList.add('hidden');
+                    document.getElementById('appCardSelection').classList.add('hidden');
+                    document.getElementById('cardInfoForm').classList.add('hidden');
+                    document.getElementById('cardInlineTerms').classList.add('hidden');
+                    document.getElementById('footerSection').classList.add('hidden');
+                    
+                    currentMethod = null;
+                }
             }
         }
 
@@ -987,6 +1012,13 @@
         // 결제 수단 선택
         function selectMethod(method) {
             currentMethod = method;
+            
+            // 세부 결제 수단(가상계좌, 휴대폰, 페이 등) 선택/변경 시 약관 동의 항상 초기화
+            document.querySelectorAll('.agree-item, .agree-item-inline, #agreeAll, #agreeAllInline').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            if (typeof updateAgreeUI === 'function') updateAgreeUI();
+            if (typeof updateAgreeInlineUI === 'function') updateAgreeInlineUI();
             
             // 모든 하위 버튼 비활성화
             document.querySelectorAll('.payment-method-card').forEach(btn => {
@@ -1047,6 +1079,11 @@
             } else {
                 // 간편결제 및 기타 결제는 선택 즉시 노출
                 footerSection.classList.remove('hidden');
+                
+                // 화면 하단 약관 및 결제 버튼이 잘 보이도록 자동 스크롤
+                setTimeout(() => {
+                    footerSection.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }, 100);
             }
         }
 
@@ -1085,6 +1122,13 @@
         // 카드사 선택
         function selectCardCompany(code, name, color) {
             selectedCardCompany = { code, name, color };
+            
+            // 다른 카드사 선택 시 약관 동의 체크박스 항상 초기화
+            document.querySelectorAll('.agree-item, .agree-item-inline, #agreeAll, #agreeAllInline').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            if (typeof updateAgreeUI === 'function') updateAgreeUI();
+            if (typeof updateAgreeInlineUI === 'function') updateAgreeInlineUI();
             
             // 모든 카드사 버튼 비활성화
             document.querySelectorAll('.card-company-btn').forEach(btn => {
@@ -1676,6 +1720,11 @@
                 overseasCards.classList.remove('hidden');
                 overseasCards.classList.add('animate-fade-in');
                 toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> <span>접기</span>';
+                
+                // 스크롤 자동 이동 (펼쳤을 때 화면에 잘 보이도록)
+                setTimeout(() => {
+                    overseasCards.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
             } else {
                 overseasCards.classList.add('hidden');
                 toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> <span>해외카드 더보기</span>';
