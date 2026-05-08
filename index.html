@@ -859,6 +859,7 @@
         let currentCategory = 'card';
         let currentMethod = 'card';
         let selectedCardCompany = null;
+        let currentCardStep = 1; // 1: 카드사/약관, 2: 할부선택, 3: 앱결제
         let receiptType = 'personal';
 
         // 페이지 로드 시 초기화
@@ -1004,7 +1005,12 @@
         // 결제 버튼 텍스트 업데이트 함수
         function updatePayButtonText(method) {
             const btnText = document.getElementById('btnText');
+            const btn = document.getElementById('payBtn');
             const amount = "125,000";
+            
+            // 기본 결제 색상은 레드
+            btn.classList.add('bg-[--cj-red]', 'hover:bg-[#c11f17]');
+            btn.classList.remove('bg-[--cj-blue]', 'hover:bg-[#002a6d]');
             
             if (method === 'card') {
                 if (selectedCardCompany) {
@@ -1077,13 +1083,20 @@
             // 카드사별 할부 혜택 업데이트
             updateInstallmentOptions(code);
             
-            // 화면 전환
+            // 화면 자동 전환 대신 약관 및 다음 버튼 노출
             setTimeout(() => {
-                document.getElementById('cardCompanySelection').classList.add('hidden');
-                document.getElementById('installmentSelection').classList.remove('hidden');
+                const footerSection = document.getElementById('footerSection');
+                footerSection.classList.remove('hidden');
                 
-                // 결제 버튼 텍스트 업데이트
-                updatePayButtonText('card');
+                const btnText = document.getElementById('btnText');
+                btnText.textContent = '다음';
+                
+                const btn = document.getElementById('payBtn');
+                btn.classList.remove('bg-[--cj-red]', 'hover:bg-[#c11f17]');
+                btn.classList.add('bg-[--cj-blue]', 'hover:bg-[#002a6d]');
+                
+                // 상태값 업데이트
+                currentCardStep = 1; 
             }, 200);
         }
 
@@ -1098,12 +1111,13 @@
             // 앱카드 선택 UI 업데이트
             updateAppCardUI(selectedCardCompany.name);
             document.getElementById('appCardSelection').classList.remove('hidden');
+            currentCardStep = 3;
 
             // 카드 앱 결제 단계에서는 하단 공통 결제 버튼 숨김 (중복 방지)
             document.getElementById('payBtnContainer').classList.add('hidden');
 
-            // 할부 선택 완료 후 하단 영역 노출 (약관 동의용)
-            document.getElementById('footerSection').classList.remove('hidden');
+            // 할부 선택 단계에서는 약관이 이미 동의된 상태이므로 푸터 숨김
+            document.getElementById('footerSection').classList.add('hidden');
         }
 
         // 할부 선택으로 뒤로 가기
@@ -1112,8 +1126,16 @@
             document.getElementById('installmentSelection').classList.remove('hidden');
             
             // 다시 숨김
-            document.getElementById('footerSection').classList.add('hidden');
+            document.getElementById('footerSection').classList.remove('hidden'); // 약관 단계로 돌아감
             document.getElementById('payBtnContainer').classList.remove('hidden');
+            const btnText = document.getElementById('btnText');
+            btnText.textContent = '다음';
+            
+            const btn = document.getElementById('payBtn');
+            btn.classList.remove('bg-[--cj-red]', 'hover:bg-[#c11f17]');
+            btn.classList.add('bg-[--cj-blue]', 'hover:bg-[#002a6d]');
+            
+            currentCardStep = 1;
         }
 
         // 앱카드 UI 업데이트
@@ -1435,10 +1457,25 @@
                 return;
             }
             
-            // 약관 동의 확인
+            // 약관 동의 확인 (공통 함수 사용)
             if (!validateTerms()) return;
+
+            // 카드 결제 flow - 1단계(약관 동의)에서 2단계(할부 선택)로 이동
+            if (currentMethod === 'card' && currentCardStep === 1) {
+                document.getElementById('cardCompanySelection').classList.add('hidden');
+                document.getElementById('installmentSelection').classList.remove('hidden');
+                document.getElementById('footerSection').classList.add('hidden');
+                
+                // 버튼 색상 초기화 (나중을 위해 레드로 미리 준비)
+                const btn = document.getElementById('payBtn');
+                btn.classList.add('bg-[--cj-red]', 'hover:bg-[#c11f17]');
+                btn.classList.remove('bg-[--cj-blue]', 'hover:bg-[#002a6d]');
+                
+                currentCardStep = 2;
+                return;
+            }
             
-            // 결제 처리 시작
+            // 결제 처리 시작 (간편결제 및 기타 수단)
             const btn = document.getElementById('payBtn');
             const btnText = document.getElementById('btnText');
             const btnLoader = document.getElementById('btnLoader');
