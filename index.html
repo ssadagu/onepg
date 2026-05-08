@@ -1130,6 +1130,14 @@
             if (typeof updateAgreeUI === 'function') updateAgreeUI();
             if (typeof updateAgreeInlineUI === 'function') updateAgreeInlineUI();
             
+            // 카드 선택 시 해외카드 영역이 펼쳐져 있다면 강제로 접기
+            const overseasCards = document.getElementById('overseasCardCompanies');
+            const toggleBtn = document.getElementById('toggleOverseasCards');
+            if (overseasCards && !overseasCards.classList.contains('hidden')) {
+                overseasCards.classList.add('hidden');
+                if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> <span>해외카드 더보기</span>';
+            }
+            
             // 모든 카드사 버튼 비활성화
             document.querySelectorAll('.card-company-btn').forEach(btn => {
                 btn.classList.remove('selected');
@@ -1721,9 +1729,9 @@
                 overseasCards.classList.add('animate-fade-in');
                 toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> <span>접기</span>';
                 
-                // 스크롤 자동 이동 (펼쳤을 때 화면에 잘 보이도록)
+                // 스크롤 자동 이동 (펼쳤을 때 화면에 잘 보이도록 더 아래로 스크롤)
                 setTimeout(() => {
-                    overseasCards.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    overseasCards.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 100);
             } else {
                 overseasCards.classList.add('hidden');
