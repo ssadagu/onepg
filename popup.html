@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CJ올리브네트웍스</title>
+  <meta name="description" content="올리브네트웍스">
+  <meta name="keywords" content="올리브네트웍스">
+  <meta name="author" content="올리브네트웍스">
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="올리브네트웍스" />
+  <meta property="og:description" content="올리브네트웍스" />
+  <meta property="og:url" content="https://www.cjolivenetworks.co.kr" />
+  <meta property="og:site_name" content="올리브네트웍스 - 국문" />
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="shortcut icon" href="img/common/favicon.ico">
+  <link rel="icon" href="img/common/favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="js/script.js"></script>
+</head>
+
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1 class="logo"><a href="/">CJ 올리브네트웍스</a></h1>
+
+      <div class="header-util">
+        <div class="lang-select">
+          <button class="lang-btn" type="button">
+            <span>KOR</span>
+          </button>
+          <ul class="lang-list">
+            <li><button type="button" class="lang-link" data-link="index-ko.html">KOR</button></li>
+            <li><button type="button" class="lang-link" data-link="index-en.html">ENG</button></li>
+            <li><button type="button" class="lang-link" data-link="index-zh.html">CHN</button></li>
+            <li><button type="button" class="lang-link" data-link="index-ja.html">JPN</button></li>
+          </ul>
+        </div>
+        <button class="close-btn" type="button" aria-label="닫기"></button>
+      </div>
+    </header>
+
+    <main class="contents">
+      <div class="test-btn-wrap">
+        <button type="button" id="testLoading" class="test-btn">로딩 보기</button>
+        <button type="button" id="testConfirm" class="test-btn">팝업 보기</button>
+      </div>
+
+      <!-- loading -->
+      <div class="loading-layer" id="loadingLayer">
+        <div class="loading-spinner"></div>
+      </div>
+      <!-- //loading -->
+
+      <!-- 팝업 -->
+      <div class="complete-modal" id="confirmModal">
+        <div class="complete-modal-dim"></div>
+
+        <div class="complete-modal-content">
+          <h2>결제를 취소하시겠습니까?</h2>
+
+          <p class="confirm-text">
+            입력하신 내용은 저장되지 않습니다.
+          </p>
+
+          <div class="confirm-btn-area">
+            <button type="button" class="confirm-cancel">
+              취소
+            </button>
+            <button type="button" class="confirm-ok">
+              확인
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- //팝업 -->
+
+
+    </main>
+  </div>
+</body>
+
+
+
+</html>

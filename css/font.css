@@ -1,0 +1,33 @@
+@charset "utf-8";
+
+/* CJ ONLYONE */
+
+@font-face {
+  font-family: "CJONLYONE";
+  src:
+    url("font/CJ_ONLYONE_300.woff2") format("woff2"),
+    url("font/CJ_ONLYONE_300.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "CJONLYONE";
+  src:
+    url("font/CJ_ONLYONE_400.woff2") format("woff2"),
+    url("font/CJ_ONLYONE_400.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "CJONLYONE";
+  src:
+    url("font/CJ_ONLYONE_500.woff2") format("woff2"),
+    url("font/CJ_ONLYONE_500.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}

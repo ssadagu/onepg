@@ -1,2017 +1,452 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>통합결제창 - 카드사 선택</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3182F6',
-                        secondary: '#00C471',
-                        danger: '#FF4D4D',
-                        dark: '#191F28',
-                        cardBlue: '#0078D4',
-                        cardRed: '#E60012',
-                        cardGreen: '#00A651',
-                        cardPurple: '#6B2D82',
-                        cardOrange: '#FF6B00',
-                        cardNavy: '#003B71',
-                        cardPink: '#E31D93',
-                        cardTeal: '#00857D'
-                    },
-                    animation: {
-                        'slide-up': 'slideUp 0.3s ease-out',
-                        'slide-left': 'slideLeft 0.3s ease-out',
-                        'slide-right': 'slideRight 0.3s ease-out',
-                        'fade-in': 'fadeIn 0.2s ease-out',
-                    },
-                    keyframes: {
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' }
-                        },
-                        slideLeft: {
-                            '0%': { transform: 'translateX(100%)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' }
-                        },
-                        slideRight: {
-                            '0%': { transform: 'translateX(-100%)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' }
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        
-        :root {
-            --cj-red: #E1251B;
-            --cj-yellow: #FBC000;
-            --cj-blue: #004B91;
-            --radius-main: 20px;
-        }
-        
-        body {
-            font-family: 'Noto Sans KR', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #F8F9FA;
-            min-height: 100vh;
-        }
-        
-        .payment-method-card {
-            transition: all 0.2s ease;
-        }
-        
-        .payment-method-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .payment-method-card.active {
-            border-color: #3182F6;
-            background-color: #F0F7FF;
-            box-shadow: 0 0 0 2px #3182F6;
-        }
-        
-        .card-company-btn {
-            transition: all 0.2s ease;
-        }
-        
-        .card-company-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card-company-btn.selected {
-            border-color: #3182F6;
-            background-color: #F0F7FF;
-            box-shadow: 0 0 0 2px #3182F6;
-        }
-        
-        .card-input:focus {
-            box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.1);
-        }
-        
-        .checkbox-custom:checked + div {
-            background-color: #3182F6;
-            border-color: #3182F6;
-        }
-        
-        .checkbox-custom:checked + div svg {
-            display: block;
-        }
-        
-        .installment-select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 3px solid #3182F6;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .shake {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-        
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
-        
-        .step-indicator {
-            position: relative;
-        }
-        
-        .step-indicator::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 100%;
-            width: 100%;
-            height: 2px;
-            background: #E5E7EB;
-            transform: translateY(-50%);
-            z-index: 0;
-        }
-        
-        .step-indicator.active::after {
-            background: #3182F6;
-        }
-        
-        .step-indicator:last-child::after {
-            display: none;
-        }
-        
-        .card-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 12px;
-            color: white;
-        }
-        .category-btn {
-            color: #6B7280;
-            background: transparent;
-        }
-        
-        .category-btn.active {
-            color: #3182F6;
-            background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CJ올리브네트웍스</title>
+  <meta name="description" content="올리브네트웍스">
+  <meta name="keywords" content="올리브네트웍스">
+  <meta name="author" content="올리브네트웍스">
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="올리브네트웍스" />
+  <meta property="og:description" content="올리브네트웍스" />
+  <meta property="og:url" content="https://www.cjolivenetworks.co.kr" />
+  <meta property="og:site_name" content="올리브네트웍스 - 국문" />
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="shortcut icon" href="img/common/favicon.ico">
+  <link rel="icon" href="img/common/favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+  <script src="js/terms-data.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/i18n-init.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 </head>
-<body class="flex items-center justify-center p-4">
 
-    <!-- 메인 결제 모달 -->
-    <div id="paymentModal" class="w-full max-w-[480px] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden animate-slide-up" style="border-radius: var(--radius-main);">
-        
-        <!-- 헤더 (CJ 뉴스룸 스타일) -->
-        <div class="bg-white border-b border-gray-100 p-6 relative">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <div class="flex gap-0.5">
-                        <div class="w-2 h-2 rounded-full bg-[--cj-red]"></div>
-                        <div class="w-2 h-2 rounded-full bg-[--cj-blue]"></div>
-                        <div class="w-2 h-2 rounded-full bg-[--cj-yellow]"></div>
-                    </div>
-                    <span class="text-xs font-bold text-gray-400 tracking-widest">ONE PG</span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <!-- 언어 선택 셀렉트 박스 -->
-                    <div class="relative">
-                        <select id="langSelect" onchange="changeLanguage(this.value)" class="appearance-none bg-gray-50 border border-gray-200 text-gray-600 text-xs rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium">
-                            <option value="ko" selected>🇰🇷 한국어</option>
-                            <option value="en">🇺🇸 English</option>
-                            <option value="zh">🇨🇳 中文</option>
-                            <option value="ja">🇯🇵 日本語</option>
-                        </select>
-                        <i class="fas fa-chevron-down absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-[10px] pointer-events-none"></i>
-                    </div>
-                    
-                    <button onclick="closeModal()" class="text-gray-300 hover:text-gray-600 transition-colors">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="mt-6">
-                <h1 class="text-2xl font-bold text-gray-900 mb-1" data-i18n="title">결제하기</h1>
-                <p class="text-gray-400 text-sm" data-i18n="subtitle">안전하고 편리한 결제 서비스를 제공합니다</p>
-            </div>
-            
-            <!-- 결제 금액 배너 -->
-            <div class="mt-6 bg-gray-50 p-5" style="border-radius: var(--radius-main);">
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-500 text-sm font-medium" data-i18n="totalAmount">최종 결제금액</span>
-                    <div class="text-right">
-                        <span class="text-2xl font-bold text-[--cj-blue]">125,000</span>
-                        <span class="text-sm font-bold text-gray-900 ml-0.5" data-i18n="currency">원</span>
-                    </div>
-                </div>
-            </div>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1 class="logo"><a href="/" data-i18n="logo">CJ 올리브네트웍스</a></h1>
+
+      <div class="header-util">
+        <div class="lang-select">
+          <button class="lang-btn" type="button">
+            <span>KOR</span>
+          </button>
+          <ul class="lang-list">
+            <li><button type="button" class="lang-link" data-lang="ko">KOR</button></li>
+            <li><button type="button" class="lang-link" data-lang="en">ENG</button></li>
+            <li><button type="button" class="lang-link" data-lang="zh">CHN</button></li>
+            <li><button type="button" class="lang-link" data-lang="ja">JPN</button></li>
+          </ul>
         </div>
+        <button class="close-btn" type="button" aria-label="닫기" data-i18n-attr="aria-label:closeAria"></button>
+      </div>
+    </header>
 
+    <main class="contents">
+      <section class="inner">
+        <ul class="info-box">
+          <li>
+            <span data-i18n="info.amount">결제금액</span>
+            <strong class="price">125,000 <em data-i18n="info.currency">원</em></strong>
+          </li>
+          <li>
+            <span data-i18n="info.productName">상품명</span>
+            <strong data-i18n="info.productValue">상품명</strong>
+          </li>
+          <li>
+            <span data-i18n="info.merchant">가맹점명</span>
+            <strong>Dev_Test_통합</strong>
+          </li>
+          <li>
+            <span data-i18n="info.servicePeriod">제공기간</span>
+            <strong>2026-05-11</strong>
+          </li>
+        </ul>
+      </section>
 
-
-        <!-- 결제 수단 선택 -->
-        <div id="methodSelection" class="p-6 pb-2">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider" data-i18n="payMethod">결제 수단</h2>
-                <span class="text-xs text-gray-400" id="categoryDesc">원하시는 결제 방식을 선택해주세요</span>
-            </div>
-            
-            <!-- 카테고리 탭 -->
-            <div class="flex gap-1 p-1 bg-gray-50 rounded-2xl mb-6 border border-gray-100">
-                <button onclick="selectCategory('card')" id="cat-card" class="category-btn active flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-credit-card text-xs"></i>
-                    <span data-i18n="catCard">카드</span>
-                </button>
-                <button onclick="selectCategory('easy')" id="cat-easy" class="category-btn flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-bolt text-xs"></i>
-                    <span data-i18n="catEasy">간편결제</span>
-                </button>
-                <button onclick="selectCategory('other')" id="cat-other" class="category-btn flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-plus-circle text-xs"></i>
-                    <span data-i18n="catOther">기타결제</span>
-                </button>
-            </div>
-            
-            <!-- 간편결제/기타결제 하위 버튼 그리드 (카드가 아닐 때만 표시) -->
-            <div id="subMethodArea" class="hidden animate-fade-in mb-2">
-                <div id="subMethodGrid" class="grid grid-cols-4 gap-2">
-                    <!-- JS로 동적 생성 -->
-                </div>
-            </div>
+      <section class="pay-info">
+        <div class="section-title">
+          <h2 data-i18n="pay.title">결제 수단</h2>
         </div>
+        <div class="pay-wrap">
+          <div class="pay-tabs">
+            <button class="pay-tab active" data-tab="card" data-i18n="pay.card">카드</button>
+            <button class="pay-tab" data-tab="simple" data-i18n="pay.simple">간편결제</button>
+            <button class="pay-tab" data-tab="etc" data-i18n="pay.etc">기타결제</button>
+          </div>
 
-        <!-- 동적 결제 폼 영역 -->
-        <div id="paymentFormArea" class="px-6 py-4">
-            
-            <!-- 카드사 선택 화면 -->
-            <div id="cardCompanySelection" class="animate-fade-in">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider" data-i18n="selectCardTitle">카드사 선택</h2>
-                    <span class="text-xs text-gray-400" data-i18n="selectCardDesc">원하시는 카드사를 선택해주세요</span>
+          <!-- 카드 -->
+          <section class="pay-panel active" id="card">
+            <div class="pay-grid card-grid">
+              <button class="pay-item"><span><img src="img/payment/ico-kb.svg" alt="국민카드"></span><em data-i18n="cards.kb">국민</em></button>
+              <button class="pay-item"><span><img src="img/payment/ico-bc.svg" alt="비씨카드"></span><em data-i18n="cards.bc">비씨</em></button>
+              <button class="pay-item"><span><img src="img/payment/ico-hyundai.svg" alt="현대카드"></span><em data-i18n="cards.hyundai">현대</em></button>
+              <button class="pay-item"><span><img src="img/payment/ico-samsung.svg" alt="삼성카드"></span><em data-i18n="cards.samsung">삼성</em></button>
+
+              <button class="pay-item"><span><img src="img/payment/ico-shinhan.svg" alt="신한카드"></span><em data-i18n="cards.shinhan">신한</em></button>
+              <button class="pay-item"><span><img src="img/payment/ico-hana.svg" alt="하나카드"></span><em data-i18n="cards.hana">하나</em></button>
+              <button class="pay-item"><span><img src="img/payment/ico-nh.svg" alt="농협카드"></span><em data-i18n="cards.nh">농협</em></button>
+              <button class="pay-item"><span><img src="img/payment/ico-woori.svg" alt="우리카드"></span><em data-i18n="cards.woori">우리</em></button>
+
+              <div class="pay-more-wrap">
+                <div class="pay-grid">
+                  <button class="pay-item"><span><img src="img/payment/ico-loca.svg" alt="롯데카드"></span><em data-i18n="cards.lotte">롯데</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-kakaobank.svg" alt="카카오뱅크"></span><em data-i18n="cards.kakaobank">카카오뱅크</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-citi.svg" alt="씨티카드"></span><em data-i18n="cards.citi">씨티</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-kj.svg" alt="광주카드"></span><em data-i18n="cards.kj">광주</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-jeonbuk.svg" alt="전북카드"></span><em data-i18n="cards.jeonbuk">전북</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-suhyup.svg" alt="수협카드"></span><em data-i18n="cards.suhyup">수협</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-jeju.svg" alt="제주카드"></span><em data-i18n="cards.jeju">제주</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-cu.svg" alt="신협카드"></span><em data-i18n="cards.cu">신협</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-visa.svg" alt="VISA"></span>VISA</button>
+                  <button class="pay-item"><span><img src="img/payment/ico-master.svg" alt="Master"></span>Master</button>
+                  <button class="pay-item"><span><img src="img/payment/ico-jcb.svg" alt="JCB"></span>JCB</button>
+                  <button class="pay-item"><span><img src="img/payment/ico-unionpay.svg" alt="UnionPay"></span>UnionPay</button>
                 </div>
-                
-                <!-- 자주 사용하는 카드사 -->
-                <div class="mb-4">
-                    <p class="text-xs text-gray-500 mb-2 font-medium" data-i18n="selectCardSubTitle">카드사 선택</p>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="selectCardCompany('samsung', '삼성카드', '#1428A0')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#1428A0] mb-2">삼성</div>
-                            <span class="text-xs font-medium text-gray-700">삼성카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('hyundai', '현대카드', '#000000')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-black mb-2">현대</div>
-                            <span class="text-xs font-medium text-gray-700">현대카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('kb', 'KB국민카드', '#FFBC00')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#FFBC00] text-black mb-2">KB</div>
-                            <span class="text-xs font-medium text-gray-700">KB국민카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('shinhan', '신한카드', '#0046FF')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#0046FF] mb-2">신한</div>
-                            <span class="text-xs font-medium text-gray-700">신한카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('lotte', '롯데카드', '#DA2128')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#DA2128] mb-2">롯데</div>
-                            <span class="text-xs font-medium text-gray-700">롯데카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('hana', '하나카드', '#009591')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#009591] mb-2">하나</div>
-                            <span class="text-xs font-medium text-gray-700">하나카드</span>
-                        </button>
+              </div>
 
-                        <button onclick="selectCardCompany('bc', 'BC카드', '#E31D93')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#E31D93] mb-2">BC</div>
-                            <span class="text-xs font-medium text-gray-700">BC카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('woori', '우리카드', '#0078D4')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#0078D4] mb-2">우리</div>
-                            <span class="text-xs font-medium text-gray-700">우리카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('nh', 'NH농협카드', '#006241')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#006241] mb-2">NH</div>
-                            <span class="text-xs font-medium text-gray-700">NH농협카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('citi', '씨티카드', '#003B71')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#003B71] mb-2">씨티</div>
-                            <span class="text-xs font-medium text-gray-700">씨티카드</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('kakao', '카카오뱅크', '#FFE100')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#FFE100] text-black mb-2">K</div>
-                            <span class="text-xs font-medium text-gray-700">카카오뱅크</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('toss', '토스뱅크', '#0064FF')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-[#0064FF] mb-2">T</div>
-                            <span class="text-xs font-medium text-gray-700">토스뱅크</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 해외카드 더보기 버튼 -->
-                <button id="toggleOverseasCards" onclick="toggleOverseasCardCompanies()" class="w-full py-3 mt-2 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 text-xs font-bold hover:bg-gray-50 hover:border-gray-200 transition-all flex items-center justify-center gap-2 mb-4">
-                    <i class="fas fa-chevron-down"></i>
-                    <span data-i18n="overseasMore">해외카드 더보기</span>
-                </button>
+              <button type="button" class="pay-more-btn">더 보기</button>
+            </div>
+          </section>
 
-                <div id="overseasCardCompanies" class="hidden mb-4">
-                    <p class="text-xs text-gray-500 mb-2 font-medium" data-i18n="overseasTitle">해외카드</p>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="selectCardCompany('visa', 'VISA', '#1434CB')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-white text-[#1434CB] border border-gray-200 mb-2 font-bold italic" style="font-size: 11px;">VISA</div>
-                            <span class="text-xs font-medium text-gray-700">VISA</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('master', 'Master', '#FF5F00')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-white border border-gray-200 mb-2 relative overflow-hidden flex items-center justify-center">
-                                <div class="w-5 h-5 rounded-full bg-[#EB001B] absolute -ml-3 mix-blend-multiply opacity-90"></div>
-                                <div class="w-5 h-5 rounded-full bg-[#F79E1B] absolute ml-3 mix-blend-multiply opacity-90"></div>
-                            </div>
-                            <span class="text-xs font-medium text-gray-700">Master</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('jcb', 'JCB', '#004A97')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-white border border-gray-200 text-[#004A97] mb-2 font-bold" style="font-size: 11px;">JCB</div>
-                            <span class="text-xs font-medium text-gray-700">JCB</span>
-                        </button>
-                        
-                        <button onclick="selectCardCompany('unionpay', 'UnionPay', '#D80027')" class="card-company-btn flex flex-col items-center p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 transition-all">
-                            <div class="card-logo bg-white border border-gray-200 mb-2 relative flex flex-col items-center justify-center">
-                                <span class="text-[#D80027] font-bold italic leading-none" style="font-size: 9px;">Union</span>
-                                <span class="text-[#004A97] font-bold italic leading-none" style="font-size: 9px;">Pay</span>
-                            </div>
-                            <span class="text-xs font-medium text-gray-700">UnionPay</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 카드 결제 전용 인라인 약관 및 다음 버튼 (추가) -->
-                <div id="cardInlineTerms" class="hidden mt-6 pt-6 border-t border-gray-100 animate-slide-up">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold text-gray-800" data-i18n="terms">이용약관</span>
-                            <i class="fas fa-chevron-up text-xs text-gray-400"></i>
-                        </div>
-                        <label class="flex items-center cursor-pointer group">
-                            <input type="checkbox" class="checkbox-custom hidden" id="agreeAllInline" onchange="toggleAllAgreeInline()">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center transition-all group-hover:border-primary">
-                                <div class="w-2.5 h-2.5 rounded-full bg-primary hidden" id="agreeAllCircleInline"></div>
-                            </div>
-                            <span class="ml-2 text-sm font-medium text-gray-700" data-i18n="agreeAll">전체동의</span>
-                        </label>
-                    </div>
-                    
-                    <div class="space-y-4 pt-2 mb-6">
-                        <div class="flex items-center group">
-                            <label class="flex items-center cursor-pointer flex-1">
-                                <input type="checkbox" class="checkbox-custom hidden agree-item-inline" onchange="checkAgreeInline()">
-                                <i class="fas fa-check text-xs text-gray-200 mr-3 transition-colors"></i>
-                                <span class="text-xs text-gray-600" data-i18n="termFinance">전자금융거래 이용약관</span>
-                            </label>
-                            <button class="text-xs text-gray-400 underline underline-offset-4 hover:text-gray-600" onclick="showTerms('finance')" data-i18n="termViewBtn">보기</button>
-                        </div>
-                        
-                        <div class="flex items-center group">
-                            <label class="flex items-center cursor-pointer flex-1">
-                                <input type="checkbox" class="checkbox-custom hidden agree-item-inline" onchange="checkAgreeInline()">
-                                <i class="fas fa-check text-xs text-gray-200 mr-3 transition-colors"></i>
-                                <span class="text-xs text-gray-600" data-i18n="termPrivacyCollect">개인정보수집 이용안내</span>
-                            </label>
-                            <button class="text-xs text-gray-400 underline underline-offset-4 hover:text-gray-600" onclick="showTerms('privacy_collect')" data-i18n="termViewBtn">보기</button>
-                        </div>
+          <!-- 간편결제 -->
+          <section class="pay-panel" id="simple">
+            <div class="pay-grid">
+              <button type="button" class="pay-item simple-pay-btn"><span><img src="img/payment/ico-kakaopay.svg" alt="카카오페이"></span>카카오페이</button>
+              <button type="button" class="pay-item simple-pay-btn"><span><img src="img/payment/ico-naverpay.svg" alt="네이버페이"></span>네이버페이</button>
+              <button type="button" class="pay-item simple-pay-btn"><span><img src="img/payment/ico-toss.svg" alt="토스페이"></span>토스페이</button>
+              <button type="button" class="pay-item simple-pay-btn"><span><img src="img/payment/ico-payco.svg" alt="페이코"></span>페이코</button>
+            </div>
+          </section>
 
-                        <div class="flex items-center group">
-                            <label class="flex items-center cursor-pointer flex-1">
-                                <input type="checkbox" class="checkbox-custom hidden agree-item-inline" onchange="checkAgreeInline()">
-                                <i class="fas fa-check text-xs text-gray-200 mr-3 transition-colors"></i>
-                                <span class="text-xs text-gray-600" data-i18n="termPrivacyProvide">개인정보 제공 및 위탁 동의</span>
-                            </label>
-                            <button class="text-xs text-gray-400 underline underline-offset-4 hover:text-gray-600" onclick="showTerms('privacy_provide')" data-i18n="termViewBtn">보기</button>
-                        </div>
-                    </div>
-
-                    <button onclick="processCardNextStep()" class="w-full bg-[--cj-blue] hover:bg-[#002a6d] text-white font-bold py-4 rounded-xl transition-all shadow-lg transform active:scale-[0.98] flex items-center justify-center gap-2">
-                        <span data-i18n="btnNext">다음</span>
-                        <i class="fas fa-arrow-right text-xs opacity-50"></i>
-                    </button>
-                </div>
+          <!-- 기타결제 -->
+          <section class="pay-panel" id="etc">
+            <div class="pay-grid pay-sub-tabs">
+              <button class="pay-item active" data-sub-tab="virtual">
+                <span><img src="img/payment/ico-virtual.svg" alt=""></span>
+                <em data-i18n="etc.virtual">가상계좌</em>
+              </button>
+              <button class="pay-item" data-sub-tab="transfer">
+                <span><img src="img/payment/ico-gyejwaiche.svg" alt=""></span>
+                <em data-i18n="etc.transfer">계좌이체</em>
+              </button>
+              <button class="pay-item" data-sub-tab="phone">
+                <span><img src="img/payment/ico-phone.svg" alt=""></span>
+                <em data-i18n="etc.phone">휴대폰</em>
+              </button>
             </div>
 
-            <!-- 할부 개월 선택 화면 (추가) -->
-            <div id="installmentSelection" class="hidden animate-slide-left">
-                <div class="flex items-center gap-2 mb-6">
-                    <button onclick="backToCardCompany()" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="flex items-center gap-2">
-                        <div id="instCardLogo" class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold">삼성</div>
-                        <h2 class="text-lg font-bold text-gray-800" id="instCardName">삼성카드</h2>
-                    </div>
+            <!-- 가상계좌 -->
+            <div id="virtual" class="pay-content active">
+              <div class="pay-explan">
+                <strong data-i18n="virtual.guideTitle">ⓘ 가상계좌 안내</strong>
+                <p data-i18n-html="virtual.guideDesc">입금 기한 내에 계좌로 입금하시면 결제가 완료됩니다.<br>미입금 시 자동 취소됩니다.</p>
+              </div>
+
+              <div class="pay-section">
+                <h3 class="pay-title" data-i18n="virtual.selectBank">입금은행 선택</h3>
+                <div class="pay-grid">
+                  <button class="pay-item"><span><img src="img/payment/ico-ibk.svg" alt=""></span><em data-i18n="banks.ibk">기업</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-kb.svg" alt=""></span><em data-i18n="banks.kb">국민</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-nh.svg" alt=""></span><em data-i18n="banks.nh">농협</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-hana.svg" alt=""></span><em data-i18n="banks.hana">하나</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-woori.svg" alt=""></span><em data-i18n="banks.woori">우리</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-shinhan.svg" alt=""></span><em data-i18n="banks.shinhan">신한</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-bnk.svg" alt=""></span><em data-i18n="banks.bnk">경남</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-post.svg" alt=""></span><em data-i18n="banks.post">우체국</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-bnk.svg" alt=""></span><em data-i18n="banks.busan">부산</em></button>
                 </div>
+              </div>
 
-                <div class="bg-gray-50 p-6 mb-6" style="border-radius: var(--radius-main);">
-                    <label class="block text-sm font-bold text-gray-700 mb-3" data-i18n="installmentSelect">할부 개월 선택</label>
-                    <select id="installmentSelectMain" class="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-[--cj-blue] focus:outline-none text-base bg-white transition-all cursor-pointer font-medium">
-                        <option value="0" data-i18n="lumpSum">일시불</option>
-                        <option value="2" data-i18n="inst2mFree">2개월 (무이자)</option>
-                        <option value="3" data-i18n="inst3mFree">3개월 (무이자)</option>
-                        <option value="5" data-i18n="inst5m">5개월</option>
-                        <option value="6" data-i18n="inst6mFree">6개월 (무이자)</option>
-                        <option value="12" data-i18n="inst12m">12개월</option>
-                    </select>
-                    <p class="text-xs text-gray-400 mt-3 flex items-center gap-1">
-                        <i class="fas fa-info-circle"></i>
-                        <span data-i18n="installmentNotice">5만원 이상 결제 시 할부 선택이 가능합니다.</span>
-                    </p>
-                </div>
+              <div class="pay-section pl20">
+                <h3 class="pay-title mb0 pl0 ml0" data-i18n="virtual.depositor">입금자명</h3>
+                <input type="text" class="pay-input name-input" data-i18n="virtual.namePlaceholder" placeholder="이름을 입력해 주세요">
 
-                <button onclick="proceedToAppCard()" class="w-full bg-[--cj-blue] text-white font-bold py-4 transition-all hover:bg-[#003d7a] active:scale-[0.98]" style="border-radius: var(--radius-main);" data-i18n="btnNext">
-                    다음
-                </button>
-            </div>
-
-            <!-- 앱카드/결제수단 선택 화면 (카드사 결제 페이지) -->
-            <div id="appCardSelection" class="hidden animate-slide-left">
-                <!-- 헤더 -->
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center gap-2">
-                        <button onclick="backToInstallment()" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
-                            <i class="fas fa-arrow-left"></i>
-                        </button>
-                        <h2 class="text-xl font-bold text-gray-800" id="appCardTitle">Samsung Card</h2>
-                    </div>
-                    <button onclick="closeModal()" class="text-gray-300 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-
-                <div class="space-y-4">
-                    <!-- 앱으로 결제 링크 -->
-                    <button class="w-full flex items-center justify-between py-1 text-sm text-gray-400 hover:text-gray-600 transition-colors">
-                        <span id="appPaymentLinkText">삼성카드 앱으로 결제</span>
-                        <i class="fas fa-chevron-right text-xs"></i>
-                    </button>
-
-                    <!-- 메인 앱카드 결제 (모니모/앱카드) -->
-                    <button onclick="connectToCardApp()" class="w-full bg-white border border-gray-100 hover:border-[--cj-blue] hover:bg-blue-50/30 p-8 flex items-center justify-between transition-all group" style="border-radius: var(--radius-main);">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center overflow-hidden">
-                                <div id="appCardIcon" class="text-[--cj-blue] font-bold text-xl">m</div>
-                            </div>
-                            <div class="text-left">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-xl font-bold text-gray-900" id="appCardName">monimo</span>
-                                    <span class="text-xl font-medium text-gray-900">pay 결제</span>
-                                </div>
-                                <p class="text-sm text-gray-400 mt-1" id="appCardDesc">모니모 앱에서 만나는 삼성카드 앱카드</p>
-                            </div>
-                        </div>
-                        <i class="fas fa-chevron-right text-gray-200 group-hover:text-[--cj-blue] group-hover:translate-x-1 transition-all"></i>
-                    </button>
-
-                    <!-- 하단 보조 결제 수단 -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="showCardInfoForm()" class="bg-white border border-gray-100 hover:border-gray-200 p-6 text-left transition-all group" style="border-radius: var(--radius-main);">
-                            <span class="block font-bold text-gray-900 mb-1">다른결제</span>
-                            <span class="text-xs text-gray-400">일반/SMS/로그인결제</span>
-                        </button>
-                        <button onclick="selectCategory('easy')" class="bg-white border border-gray-100 hover:border-gray-200 p-6 text-left transition-all group" style="border-radius: var(--radius-main);">
-                            <span class="block font-bold text-gray-900 mb-1">간편결제</span>
-                            <span class="text-xs text-gray-400">PAYCO, 삼성페이</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 카드 정보 입력 화면 (기존에서 위치 이동 및 id 유지) -->
-            <div id="cardInfoForm" class="hidden animate-slide-left">
-                <div class="flex items-center gap-2 mb-4">
-                    <button onclick="backToAppCard()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="flex items-center gap-2">
-                        <div id="selectedCardLogo" class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold">삼성</div>
-                        <div>
-                            <h2 class="text-sm font-bold text-gray-700" id="selectedCardName">삼성카드</h2>
-                            <p class="text-xs text-gray-400">카드 정보를 입력해주세요</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="space-y-4">
-                    <!-- 카드 번호 -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">카드 번호</label>
-                        <div class="relative">
-                            <input type="text" id="cardNumber" placeholder="0000 - 0000 - 0000 - 0000" maxlength="19"
-                                class="card-input w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base font-mono tracking-widest transition-all"
-                                oninput="formatCardNumber(this)">
-                            <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                                <i class="fab fa-cc-visa text-2xl text-gray-400" id="cardIcon"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <!-- 유효기간 -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">유효기간</label>
-                            <input type="text" placeholder="MM / YY" maxlength="7"
-                                class="card-input w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base font-mono text-center transition-all"
-                                oninput="formatExpiry(this)">
-                        </div>
-                        <!-- CVC -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                CVC
-                                <span class="ml-1 text-gray-400 cursor-help" title="카드 뒷면 3자리 숫자">
-                                    <i class="fas fa-question-circle"></i>
-                                </span>
-                            </label>
-                            <input type="password" placeholder="000" maxlength="3"
-                                class="card-input w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base font-mono text-center transition-all"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                        </div>
-                    </div>
-
-                    <!-- 할부 선택 -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">할부 개월</label>
-                        <select id="installmentSelect" class="installment-select w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base bg-white transition-all cursor-pointer">
-                            <option value="0">일시불</option>
-                            <option value="2">2개월 (무이자)</option>
-                            <option value="3">3개월 (무이자)</option>
-                            <option value="5">5개월</option>
-                            <option value="6">6개월</option>
-                            <option value="10">10개월</option>
-                            <option value="12">12개월</option>
-                        </select>
-                    </div>
-
-                    <!-- 카드 비밀번호 앞 2자리 -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">카드 비밀번호 앞 2자리</label>
-                        <div class="flex gap-2">
-                            <input type="password" placeholder="••" maxlength="2"
-                                class="card-input w-20 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base font-mono text-center transition-all"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                            <div class="flex items-center text-gray-400 text-sm">
-                                <i class="fas fa-lock mr-2"></i>
-                                <span>비밀번호 앞 2자리를 입력해주세요</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 결제하기 버튼 추가 -->
-                <button onclick="connectToCardApp('general')" class="w-full mt-6 bg-[--cj-blue] text-white font-bold py-4 transition-all hover:bg-[#003d7a] active:scale-[0.98]" style="border-radius: var(--radius-main);">
-                    결제하기
-                </button>
-            </div>
-
-            <!-- 계좌이체 폼 -->
-            <div id="form-transfer" class="hidden animate-fade-in">
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-info-circle text-primary mt-0.5"></i>
-                        <div class="text-sm text-gray-700">
-                            <p class="font-medium mb-1">계좌이체 안내</p>
-                            <p class="text-gray-600">결제 즉시 계좌에서 출금되며, 은행별로 수수료가 발생할 수 있습니다.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700">은행 선택</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button class="bank-btn p-3 rounded-xl border-2 border-gray-200 hover:border-primary hover:bg-blue-50 transition-all text-sm font-medium text-gray-700">
-                            <i class="fas fa-building mr-1"></i>국민
-                        </button>
-                        <button class="bank-btn p-3 rounded-xl border-2 border-gray-200 hover:border-primary hover:bg-blue-50 transition-all text-sm font-medium text-gray-700">
-                            <i class="fas fa-building mr-1"></i>신한
-                        </button>
-                        <button class="bank-btn p-3 rounded-xl border-2 border-gray-200 hover:border-primary hover:bg-blue-50 transition-all text-sm font-medium text-gray-700">
-                            <i class="fas fa-building mr-1"></i>우리
-                        </button>
-                        <button class="bank-btn p-3 rounded-xl border-2 border-gray-200 hover:border-primary hover:bg-blue-50 transition-all text-sm font-medium text-gray-700">
-                            <i class="fas fa-building mr-1"></i>하나
-                        </button>
-                        <button class="bank-btn p-3 rounded-xl border-2 border-gray-200 hover:border-primary hover:bg-blue-50 transition-all text-sm font-medium text-gray-700">
-                            <i class="fas fa-building mr-1"></i>농협
-                        </button>
-                        <button class="bank-btn p-3 rounded-xl border-2 border-gray-200 hover:border-primary hover:bg-blue-50 transition-all text-sm font-medium text-gray-700">
-                            <i class="fas fa-building mr-1"></i>기업
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 가상계좌 폼 -->
-            <div id="form-virtual" class="hidden animate-fade-in">
-                <div class="bg-purple-50 border border-purple-100 rounded-xl p-4 mb-4">
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-info-circle text-purple-600 mt-0.5"></i>
-                        <div class="text-sm text-gray-700">
-                            <p class="font-medium mb-1" data-i18n="virtualAccountInfoTitle">가상계좌 안내</p>
-                            <p class="text-gray-600" data-i18n="virtualAccountInfoDesc">입금 기한 내에 계좌로 입금하시면 결제가 완료됩니다. 미입금 시 자동 취소됩니다.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700" data-i18n="depositBank">입금 은행</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button class="bank-btn p-3 rounded-xl border-2 border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition-all text-sm font-medium text-gray-700">
-                            국민은행
-                        </button>
-                        <button class="bank-btn p-3 rounded-xl border-2 border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition-all text-sm font-medium text-gray-700">
-                            신한은행
-                        </button>
-                        <button class="bank-btn p-3 rounded-xl border-2 border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition-all text-sm font-medium text-gray-700">
-                            우리은행
-                        </button>
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5" data-i18n="depositorName">입금자명</label>
-                        <input type="text" placeholder="입금자 이름" value="홍길동"
-                            class="card-input w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base transition-all">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 휴대폰 결제 폼 -->
-            <div id="form-phone" class="hidden animate-fade-in">
-                <div class="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-4">
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-info-circle text-orange-600 mt-0.5"></i>
-                        <div class="text-sm text-gray-700">
-                            <p class="font-medium mb-1" data-i18n="phonePayInfoTitle">휴대폰 결제 안내</p>
-                            <p class="text-gray-600" data-i18n="phonePayInfoDesc">휴대폰 요금에 합산되어 청구됩니다. 결제 후 취소 시 다음 달 요금에서 차감됩니다.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700" data-i18n="selectCarrier">통신사 선택</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button class="carrier-btn p-3 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all text-sm font-medium text-gray-700">
-                            SKT
-                        </button>
-                        <button class="carrier-btn p-3 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all text-sm font-medium text-gray-700">
-                            KT
-                        </button>
-                        <button class="carrier-btn p-3 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all text-sm font-medium text-gray-700">
-                            LG U+
-                        </button>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5" data-i18n="mobileNumber">휴대폰 번호</label>
-                        <input type="tel" placeholder="010-0000-0000" maxlength="13"
-                            class="card-input w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base transition-all"
-                            oninput="formatPhone(this)">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 간편결제 폼 -->
-            <div id="form-easy" class="hidden animate-fade-in">
-                <div class="text-center py-8">
-                    <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4 text-3xl" id="easyIcon">
-                        <i class="fas fa-comment text-yellow-500"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-2" id="easyTitle">카카오페이</h3>
-                    <p class="text-gray-600 text-sm mb-6" data-i18n="easyPayDesc">선택하신 간편결제로 결제를 진행합니다.<br>결제 버튼을 클릭하면 해당 앱으로 연결됩니다.</p>
-                    
-                    <div class="bg-gray-50 rounded-xl p-4 text-left space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600" data-i18n="payMethodShort">결제수단</span>
-                            <span class="font-medium" id="easyMethodName">카카오페이</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600" data-i18n="payAmount">결제금액</span>
-                            <span class="font-bold text-gray-900">125,000 <span data-i18n="currency">원</span></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- 현금영수증 -->
-        <div id="receiptSection" class="px-6 py-2">
-            <div class="border-t border-gray-200 pt-4">
-                <div class="flex items-center justify-between mb-3">
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" class="checkbox-custom hidden" id="receiptCheck" onchange="toggleReceipt()">
-                        <div class="w-5 h-5 rounded border-2 border-gray-300 flex items-center justify-center transition-all">
-                            <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
-                        <span class="ml-2 text-sm font-medium text-gray-700" data-i18n="issueReceipt">현금영수증 발급</span>
+                <div class="cash-receipt-wrap">
+                  <h3 class="pay-title pl0 ml0 mb10" data-i18n="virtual.receiptTitle">현금영수증 발행정보</h3>
+                  <div class="cash-receipt-radio">
+                    <label>
+                      <input type="radio" name="receiptType" value="phone" checked>
+                      <span data-i18n="virtual.receiptPhone">소득공제용</span>
                     </label>
+
+                    <label>
+                      <input type="radio" name="receiptType" value="biz">
+                      <span data-i18n="virtual.receiptBiz">지출증빙용</span>
+                    </label>
+
+                    <label>
+                      <input type="radio" name="receiptType" value="none">
+                      <span data-i18n="virtual.receiptNone">미발행</span>
+                    </label>
+                  </div>
+                  <div class="cash-receipt-input">
+                    <input type="tel" class="pay-input receipt-input" inputmode="numeric" placeholder="휴대폰번호를 입력해주세요" data-phone-placeholder="휴대폰번호를 입력해주세요" data-biz-placeholder="사업자 등록번호를 입력해주세요">
+                  </div>
                 </div>
-                
-                <div id="receiptForm" class="hidden space-y-3 animate-fade-in">
-                    <div class="flex gap-2">
-                        <button onclick="setReceiptType('personal')" id="receipt-personal" class="flex-1 py-2 rounded-lg border-2 border-primary bg-blue-50 text-primary text-sm font-medium transition-all">
-                            개인소득공제
-                        </button>
-                        <button onclick="setReceiptType('business')" id="receipt-business" class="flex-1 py-2 rounded-lg border-2 border-gray-200 text-gray-600 text-sm font-medium hover:border-gray-300 transition-all">
-                            사업자지출증빙
-                        </button>
-                    </div>
-                    <input type="text" id="receiptNumber" placeholder="휴대폰 번호 (- 없이)" maxlength="11"
-                        class="card-input w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none text-base transition-all"
-                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                </div>
+              </div>
             </div>
+            <!-- //가상계좌 -->
+            <!-- 계좌이체 -->
+            <div id="transfer" class="pay-content">
+              <div class="pay-explan">
+                <strong data-i18n="transfer.guideTitle">② 계좌이체 안내</strong>
+                <p data-i18n-html="transfer.guideDesc">입금 기한 내에 계좌로 입금하시면 결제가 완료됩니다.<br>미입금 시 자동 취소됩니다.</p>
+              </div>
+              <div class="pay-section">
+                <h3 class="pay-title" data-i18n="transfer.selectBank">입금은행 선택</h3>
+                <div class="pay-grid">
+                  <button class="pay-item"><span><img src="img/payment/ico-ibk.svg" alt=""></span><em data-i18n="banks.ibk">기업</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-kb.svg" alt=""></span><em data-i18n="banks.kb">국민</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-nh.svg" alt=""></span><em data-i18n="banks.nh">농협</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-hana.svg" alt=""></span><em data-i18n="banks.hana">하나</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-woori.svg" alt=""></span><em data-i18n="banks.woori">우리</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-shinhan.svg" alt=""></span><em data-i18n="banks.shinhan">신한</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-bnk.svg" alt=""></span><em data-i18n="banks.bnk">경남</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-post.svg" alt=""></span><em data-i18n="banks.post">우체국</em></button>
+                  <button class="pay-item"><span><img src="img/payment/ico-bnk.svg" alt=""></span><em data-i18n="banks.busan">부산</em></button>
+                </div>
+              </div>
+
+              <div class="pay-section pl20">
+                <h3 class="pay-title mb0 pl0 ml0" data-i18n="transfer.depositor">입금자명</h3>
+                <input type="text" class="pay-input name-input" data-i18n="transfer.namePlaceholder" placeholder="이름을 입력해 주세요">
+                <label class="pay-check">
+                  <input type="checkbox">
+                  <span></span>
+                  <em data-i18n="transfer.cashReceipt">현금영수증 발급</em>
+                </label>
+              </div>
+            </div>
+            <!-- //계좌이체 -->
+
+            <!-- 휴대폰 -->
+            <div id="phone" class="pay-content">
+              <div class="pay-explan">
+                <strong data-i18n="phonePay.guideTitle">③ 휴대폰 안내</strong>
+                <p data-i18n-html="phonePay.guideDesc">휴대폰 요금에 합산되어 청구됩니다.<br /> 결제 후 취소 시 다음 달 요금에서 차감됩니다.</p>
+              </div>
+
+              <div class="pay-section">
+                <h3 class="pay-title mb0" data-i18n="phonePay.selectCarrier">통신사 선택</h3>
+                <div class="pay-grid telecom">
+                  <button type="button" class="pay-item active">
+                    <span><img src="img/payment/ico-SK.svg" alt="SKT"></span>
+                    SKT
+                  </button>
+                  <button type="button" class="pay-item">
+                    <span><img src="img/payment/ico-kt.svg" alt="KT"></span>
+                    KT
+                  </button>
+                  <button type="button" class="pay-item">
+                    <span><img src="img/payment/ico-lg.svg" alt="LG U+"></span>
+                    LG U+
+                  </button>
+                </div>
+                <div class="pay-section pl20">
+                  <h3 class="pay-title mb0 pl0 ml0" data-i18n="phonePay.mobileNumber">휴대폰 번호</h3>
+                  <input type="tel" class="pay-input phone-input" placeholder="010-0000-0000" inputmode="numeric">
+                  <label class="pay-check">
+                    <input type="checkbox">
+                    <span></span>
+                    <em data-i18n="phonePay.cashReceipt">현금영수증 발급</em>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <!-- //휴대폰 -->
+          </section>
         </div>
+        <!-- 배너 -->
+        <div class="pay-after-content simple-after-content">
+          <div class="benefit-banner swiper benefitSwiper">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide">
+                <a href="#">
+                  <div class="banner-text">
+                    <strong><span data-i18n="banners.0.highlight">무이자</span><span data-i18n="banners.0.title"> 할부 혜택</span></strong>
+                    <p data-i18n-html="banners.0.desc">이제 부담없이 구매하세요<br>카드사 무이자 할부 혜택을 확인하세요.</p>
+                  </div>
+                  <div class="banner-thumb">
+                    <img src="img/common/banner-installment.png" alt="무이자 할부" data-i18n-attr="alt:banners.0.alt">
+                  </div>
+                </a>
+              </div>
 
-        <!-- 약관 동의 및 결제 버튼 영역 (초기 숨김) -->
-        <div id="footerSection" class="hidden">
-            <!-- 약관 동의 -->
-            <div class="px-6 py-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold text-gray-800" data-i18n="terms">이용약관</span>
-                            <i class="fas fa-chevron-up text-xs text-gray-400"></i>
-                        </div>
-                        <label class="flex items-center cursor-pointer group">
-                            <input type="checkbox" class="checkbox-custom hidden" id="agreeAll" onchange="toggleAllAgree()">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center transition-all group-hover:border-primary">
-                                <div class="w-2.5 h-2.5 rounded-full bg-primary hidden" id="agreeAllCircle"></div>
-                            </div>
-                            <span class="ml-2 text-sm font-medium text-gray-700" data-i18n="agreeAll">전체동의</span>
-                        </label>
-                    </div>
-                    
-                    <div class="space-y-4 pt-2 border-t border-gray-50">
-                        <div class="flex items-center group">
-                            <label class="flex items-center cursor-pointer flex-1">
-                                <input type="checkbox" class="checkbox-custom hidden agree-item" onchange="checkAgree()">
-                                <i class="fas fa-check text-xs text-gray-200 mr-3 transition-colors"></i>
-                                <span class="text-xs text-gray-600" data-i18n="termFinance">전자금융거래 이용약관</span>
-                            </label>
-                            <button class="text-xs text-gray-400 underline underline-offset-4 hover:text-gray-600" onclick="showTerms('finance')" data-i18n="termViewBtn">보기</button>
-                        </div>
-                        
-                        <div class="flex items-center group">
-                            <label class="flex items-center cursor-pointer flex-1">
-                                <input type="checkbox" class="checkbox-custom hidden agree-item" onchange="checkAgree()">
-                                <i class="fas fa-check text-xs text-gray-200 mr-3 transition-colors"></i>
-                                <span class="text-xs text-gray-600" data-i18n="termPrivacyCollect">개인정보수집 이용안내</span>
-                            </label>
-                            <button class="text-xs text-gray-400 underline underline-offset-4 hover:text-gray-600" onclick="showTerms('privacy_collect')" data-i18n="termViewBtn">보기</button>
-                        </div>
+              <div class="swiper-slide">
+                <a href="#">
+                  <div class="banner-text">
+                    <strong><span data-i18n="banners.1.highlight">간편결제</span><span data-i18n="banners.1.title"> 혜택</span></strong>
+                    <p data-i18n-html="banners.1.desc">간편결제로 더 빠르고 편리하게<br>결제 혜택을 확인하세요.</p>
+                  </div>
+                  <div class="banner-thumb">
+                    <img src="img/common/banner-installment.png" alt="간편결제 혜택" data-i18n-attr="alt:banners.1.alt">
+                  </div>
+                </a>
+              </div>
 
-                        <div class="flex items-center group">
-                            <label class="flex items-center cursor-pointer flex-1">
-                                <input type="checkbox" class="checkbox-custom hidden agree-item" onchange="checkAgree()">
-                                <i class="fas fa-check text-xs text-gray-200 mr-3 transition-colors"></i>
-                                <span class="text-xs text-gray-600" data-i18n="termPrivacyProvide">개인정보 제공 및 위탁 동의</span>
-                            </label>
-                            <button class="text-xs text-gray-400 underline underline-offset-4 hover:text-gray-600" onclick="showTerms('privacy_provide')" data-i18n="termViewBtn">보기</button>
-                        </div>
-                    </div>
-                </div>
-
-            <!-- 결제 버튼 -->
-            <div id="payBtnContainer" class="p-6 pt-2">
-                <button onclick="processPayment()" id="payBtn" class="w-full bg-[--cj-red] hover:bg-[#c11f17] text-white font-bold py-4 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-600/10 flex items-center justify-center gap-2" style="border-radius: var(--radius-main);">
-                    <span id="btnText">125,000원 결제하기</span>
-                    <div id="btnLoader" class="loader border-white border-t-transparent hidden"></div>
-                </button>
-                
-                <p class="text-center text-xs text-gray-400 mt-4">
-                    <i class="fas fa-shield-alt mr-1"></i>
-                    <span data-i18n="sslNotice">안전한 결제를 위해 SSL 암호화 통신을 사용합니다</span>
-                </p>
+              <div class="swiper-slide">
+                <a href="#">
+                  <div class="banner-text">
+                    <strong><span data-i18n="banners.2.highlight">카드사</span><span data-i18n="banners.2.title"> 이벤트</span></strong>
+                    <p data-i18n-html="banners.2.desc">진행 중인 카드사 이벤트와<br>할부 혜택을 확인하세요.</p>
+                  </div>
+                  <div class="banner-thumb">
+                    <img src="img/common/banner-installment.png" alt="카드사 이벤트" data-i18n-attr="alt:banners.2.alt">
+                  </div>
+                </a>
+              </div>
             </div>
+
+            <div class="benefit-pagination"></div>
+          </div>
+
+          <div class="terms-wrap simple-terms-wrap">
+            <div class="installment-wrap">
+              <div class="section-title mt20">
+                <h2 data-i18n="installment.title">할부선택</h2>
+              </div>
+              <div class="installment-select">
+                <select class="pay-select">
+                  <option>일시불</option>
+                  <option>2개월</option>
+                  <option>3개월</option>
+                  <option>4개월</option>
+                  <option>5개월</option>
+                  <option>6개월</option>
+                  <option>12개월</option>
+                </select>
+                <span class="select-arrow"></span>
+              </div>
+              <label class="pay-check">
+                <input type="checkbox">
+                <span></span>
+                <em data-i18n="installment.useCardPoint">카드포인트 사용</em>
+              </label>
+            </div>
+
+            <div class="section-title mt20">
+              <h2 data-i18n="terms.title">이용약관</h2>
+            </div>
+
+            <div class="terms-all-wrap active">
+              <button type="button" class="terms-all-toggle">
+                <label class="terms-all">
+                  <input type="checkbox" id="agreeAll">
+                  <span class="check-icon"></span>
+                  <em data-i18n="terms.agreeAll">모든 약관에 동의합니다.</em>
+                </label>
+                <span class="terms-arrow"></span>
+              </button>
+
+              <div class="terms-list">
+                <div class="terms-item">
+                  <label>
+                    <input type="checkbox" class="agree-item">
+                    <span></span>
+                    <em data-i18n="terms.terms1">전자금융거래 이용약관</em>
+                  </label>
+                  <button type="button" class="terms-open-btn" data-target="terms1" data-title="전자금융거래 이용약관" data-i18n="terms.view">
+                    보기
+                  </button>
+                </div>
+                <div class="terms-item">
+                  <label>
+                    <input type="checkbox" class="agree-item">
+                    <span></span>
+                    <em data-i18n="terms.terms2">개인정보수집 이용안내</em>
+                  </label>
+                  <button type="button" class="terms-open-btn" data-target="terms2" data-title="개인정보수집 이용안내" data-i18n="terms.view">
+                    보기
+                  </button>
+                </div>
+                <div class="terms-item">
+                  <label>
+                    <input type="checkbox" class="agree-item">
+                    <span></span>
+                    <em data-i18n="terms.terms3">개인정보 제공 및 위탁 동의</em>
+                  </label>
+                  <button type="button" class="terms-open-btn" data-target="terms3" data-title="개인정보 제공 및 위탁 동의" data-i18n="terms.view">
+                    보기
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-next" disabled data-i18n="terms.next">다음</button>
+          </div>
         </div>
-    </div>
+      </section>
 
-    <!-- 약관 모달 -->
-    <div id="termsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden animate-slide-up">
-            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                <h3 class="font-bold text-gray-800" id="termsTitle">이용약관</h3>
-                <button onclick="closeTerms()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="p-4 overflow-y-auto max-h-[60vh] text-sm text-gray-600 leading-relaxed" id="termsContent">
-            </div>
-            <div class="p-4 border-t border-gray-200">
-                <button onclick="closeTerms()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 rounded-xl transition-colors" data-i18n="btnConfirm">
-                    확인
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- 앱 결제 연결 중 오버레이 -->
-    <div id="appConnectingOverlay" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[60] backdrop-blur-md">
-        <div class="bg-white p-10 max-w-sm w-full mx-4 text-center animate-slide-up" style="border-radius: var(--radius-main);">
-            <div class="relative w-24 h-24 mx-auto mb-6">
-                <!-- 로딩 애니메이션 -->
-                <div class="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-[--cj-blue] rounded-full border-t-transparent animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <i class="fas fa-mobile-alt text-3xl text-[--cj-blue]"></i>
-                </div>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2" id="connectingTitle">카드사 앱 연결 중</h3>
-            <p class="text-gray-500 text-sm leading-relaxed" id="connectingDesc">
-                안전한 결제를 위해<br>
-                <span class="font-bold text-gray-800" id="connectingTarget">삼성카드</span> 앱으로 이동합니다.
-            </p>
-            
-            <div class="mt-8 pt-6 border-t border-gray-100">
-                <div class="flex items-center justify-center gap-4">
-                    <div class="w-1.5 h-1.5 rounded-full bg-[--cj-red] animate-bounce" style="animation-delay: 0s"></div>
-                    <div class="w-1.5 h-1.5 rounded-full bg-[--cj-blue] animate-bounce" style="animation-delay: 0.2s"></div>
-                    <div class="w-1.5 h-1.5 rounded-full bg-[--cj-yellow] animate-bounce" style="animation-delay: 0.4s"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+      <!-- 공통 modal -->
+      <div class="terms-modal">
+        <div class="terms-modal-dim"></div>
 
-    <!-- 결제 완료 팝업 -->
-    <div id="successPopup" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[70] backdrop-blur-sm p-4">
-        <div class="bg-white max-w-sm w-full text-center p-8 animate-slide-up" style="border-radius: var(--radius-main);">
-            <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-check text-4xl text-green-500"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="successTitle">결제 완료</h2>
-            <p class="text-gray-500 mb-8 leading-relaxed" data-i18n="successDesc">
-                주문하신 상품의 결제가<br>
-                성공적으로 완료되었습니다.
-            </p>
-            
-            <div class="bg-gray-50 rounded-2xl p-5 mb-8 text-left space-y-3">
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-500" data-i18n="payAmount">결제금액</span>
-                    <span class="font-bold text-gray-900">125,000<span data-i18n="currency">원</span></span>
-                </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-500" data-i18n="payMethod">결제수단</span>
-                    <span id="successMethodName" class="font-medium text-gray-900">삼성카드 (일시불)</span>
-                </div>
-            </div>
-
-            <button onclick="finishProcess()" class="w-full bg-gray-900 text-white font-bold py-4 transition-all hover:bg-black" style="border-radius: var(--radius-main);" data-i18n="btnConfirm">
-                확인
+        <div class="terms-modal-content">
+          <div class="terms-modal-header">
+            <h2 class="terms-modal-title" data-i18n="terms.modalTitle">전자금융거래 이용약관</h2>
+            <button type="button" class="terms-modal-close" data-i18n-attr="aria-label:closeAria" aria-label="닫기">✕</button>
+          </div>
+          <div class="terms-modal-body">
+            <div class="terms-modal-scroll"></div>
+          </div>
+          <div class="terms-modal-footer">
+            <button type="button" class="terms-modal-confirm" disabled>
+              확인
             </button>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <script>
-        // 다국어 번역 데이터
-        const i18n = {
-            ko: {
-                title: "결제하기",
-                subtitle: "안전하고 편리한 결제 서비스를 제공합니다",
-                totalAmount: "최종 결제금액",
-                currency: "원",
-                payMethod: "결제 수단",
-                payMethodShort: "결제수단",
-                payAmount: "결제금액",
-                catCard: "카드",
-                catEasy: "간편결제",
-                catOther: "기타결제",
-                overseasMore: "해외카드 더보기",
-                overseasTitle: "해외카드",
-                terms: "이용약관",
-                agreeAll: "전체동의",
-                easyPayDesc: "선택하신 간편결제로 결제를 진행합니다.<br>결제 버튼을 클릭하면 해당 앱으로 연결됩니다.",
-                sslNotice: "안전한 결제를 위해 SSL 암호화 통신을 사용합니다",
-                payBtn: "결제하기",
-                selectCardTitle: "카드사 선택",
-                selectCardDesc: "원하시는 카드사를 선택해주세요",
-                selectCardSubTitle: "카드사 선택",
-                depositBank: "입금 은행",
-                depositorName: "입금자명",
-                issueReceipt: "현금영수증 발급",
-                phonePayInfoTitle: "휴대폰 결제 안내",
-                selectCarrier: "통신사 선택",
-                mobileNumber: "휴대폰 번호",
-                virtualAccountInfoTitle: "가상계좌 안내",
-                virtualAccountInfoDesc: "입금 기한 내에 계좌로 입금하시면 결제가 완료됩니다. 미입금 시 자동 취소됩니다.",
-                phonePayInfoDesc: "휴대폰 요금에 합산되어 청구됩니다. 결제 후 취소 시 다음 달 요금에서 차감됩니다.",
-                termFinance: "전자금융거래 이용약관",
-                termPrivacyCollect: "개인정보수집 이용안내",
-                termPrivacyProvide: "개인정보 제공 및 위탁 동의",
-                termViewBtn: "보기",
-                installmentSelect: "할부 개월 선택",
-                lumpSum: "일시불",
-                inst2mFree: "2개월 (무이자)",
-                inst3mFree: "3개월 (무이자)",
-                inst5m: "5개월",
-                inst6mFree: "6개월 (무이자)",
-                inst12m: "12개월",
-                installmentNotice: "5만원 이상 결제 시 할부 선택이 가능합니다.",
-                btnNext: "다음",
-                btnConfirm: "확인",
-                successTitle: "결제 완료",
-                successDesc: "주문하신 상품의 결제가<br>성공적으로 완료되었습니다.",
-                cancelConfirm: "결제를 취소하시겠습니까?\n입력하신 정보는 저장되지 않습니다.",
-                cancelAlert: "결제창이 닫혔습니다."
-            },
-            en: {
-                title: "Payment",
-                subtitle: "Safe and convenient payment service",
-                totalAmount: "Total Amount",
-                currency: "KRW",
-                payMethod: "Payment Method",
-                payMethodShort: "Method",
-                payAmount: "Amount",
-                catCard: "Card",
-                catEasy: "Easy Pay",
-                catOther: "Other",
-                overseasMore: "More Overseas Cards",
-                overseasTitle: "Overseas Cards",
-                terms: "Terms & Conditions",
-                agreeAll: "Agree to all",
-                easyPayDesc: "Proceeding with the selected easy payment.<br>Click the pay button to connect to the app.",
-                sslNotice: "We use SSL encrypted communication for secure payments",
-                payBtn: "Pay",
-                selectCardTitle: "Select Card",
-                selectCardDesc: "Please select a card company",
-                selectCardSubTitle: "Select Card",
-                depositBank: "Deposit Bank",
-                depositorName: "Depositor Name",
-                issueReceipt: "Issue Cash Receipt",
-                phonePayInfoTitle: "Mobile Payment Info",
-                selectCarrier: "Select Carrier",
-                mobileNumber: "Mobile Number",
-                virtualAccountInfoTitle: "Virtual Account Info",
-                virtualAccountInfoDesc: "Payment will be completed upon deposit within the deadline. It will be automatically canceled if not deposited.",
-                phonePayInfoDesc: "It will be billed together with your mobile phone bill. If canceled after payment, it will be deducted from next month's bill.",
-                termFinance: "Electronic Financial Transaction Terms",
-                termPrivacyCollect: "Personal Information Collection Guide",
-                termPrivacyProvide: "Consent to Provide Personal Info",
-                termViewBtn: "View",
-                installmentSelect: "Select Installments",
-                lumpSum: "Lump Sum",
-                inst2mFree: "2 months (Interest-free)",
-                inst3mFree: "3 months (Interest-free)",
-                inst5m: "5 months",
-                inst6mFree: "6 months (Interest-free)",
-                inst12m: "12 months",
-                installmentNotice: "Installments available for purchases over 50,000 KRW.",
-                btnNext: "Next",
-                btnConfirm: "Confirm",
-                successTitle: "Payment Complete",
-                successDesc: "Payment for your order has been<br>successfully completed.",
-                cancelConfirm: "Are you sure you want to cancel the payment?\nThe information you entered will not be saved.",
-                cancelAlert: "Payment window has been closed."
-            },
-            zh: {
-                title: "支付",
-                subtitle: "安全便捷的支付服务",
-                totalAmount: "总金额",
-                currency: "韩元",
-                payMethod: "支付方式",
-                payMethodShort: "支付方式",
-                payAmount: "支付金额",
-                catCard: "信用卡",
-                catEasy: "快捷支付",
-                catOther: "其他",
-                overseasMore: "更多海外信用卡",
-                overseasTitle: "海外信用卡",
-                terms: "使用条款",
-                agreeAll: "全选",
-                easyPayDesc: "使用所选的快捷支付进行结算。<br>点击支付按钮即可连接至相关应用程序。",
-                sslNotice: "为了您的支付安全，我们使用SSL加密通信",
-                payBtn: "支付",
-                selectCardTitle: "选择信用卡",
-                selectCardDesc: "请选择信用卡公司",
-                selectCardSubTitle: "选择信用卡",
-                depositBank: "存款银行",
-                depositorName: "存款人姓名",
-                issueReceipt: "发行现金收据",
-                phonePayInfoTitle: "手机支付须知",
-                selectCarrier: "选择运营商",
-                mobileNumber: "手机号码",
-                virtualAccountInfoTitle: "虚拟账户须知",
-                virtualAccountInfoDesc: "在期限内存款即可完成支付。若未存款将自动取消。",
-                phonePayInfoDesc: "将与您的手机账单合并计费。付款后取消，将在下个月账单中扣除。",
-                termFinance: "电子金融交易条款",
-                termPrivacyCollect: "个人信息收集指南",
-                termPrivacyProvide: "同意提供及委托个人信息",
-                termViewBtn: "查看",
-                installmentSelect: "选择分期",
-                lumpSum: "一次性付清",
-                inst2mFree: "2个月 (免息)",
-                inst3mFree: "3个月 (免息)",
-                inst5m: "5个月",
-                inst6mFree: "6个月 (免息)",
-                inst12m: "12个月",
-                installmentNotice: "消费满5万韩元可选择分期付款。",
-                btnNext: "下一步",
-                btnConfirm: "确认",
-                successTitle: "支付完成",
-                successDesc: "您的订单支付<br>已成功完成。",
-                cancelConfirm: "您确定要取消付款吗？\n您输入的信息将不会被保存。",
-                cancelAlert: "付款窗口已关闭。"
-            },
-            ja: {
-                title: "お支払い",
-                subtitle: "安全で便利な決済サービス",
-                totalAmount: "最終決済金額",
-                currency: "ウォン",
-                payMethod: "お支払い方法",
-                payMethodShort: "決済方法",
-                payAmount: "決済金額",
-                catCard: "カード",
-                catEasy: "簡易決済",
-                catOther: "その他",
-                overseasMore: "海外カードをもっと見る",
-                overseasTitle: "海外カード",
-                terms: "利用規約",
-                agreeAll: "すべて同意",
-                easyPayDesc: "選択した簡易決済で決済を進めます。<br>決済ボタンをクリックすると該当アプリに遷移します。",
-                sslNotice: "安全な決済のためにSSL暗号化通信を使用しています",
-                payBtn: "決済する",
-                selectCardTitle: "カード会社を選択",
-                selectCardDesc: "ご希望のカード会社を選択してください",
-                selectCardSubTitle: "カード会社を選択",
-                depositBank: "入金銀行",
-                depositorName: "入金者名",
-                issueReceipt: "現金領収書の発行",
-                phonePayInfoTitle: "携帯電話決済のご案内",
-                selectCarrier: "通信会社を選択",
-                mobileNumber: "携帯電話番号",
-                virtualAccountInfoTitle: "仮想口座のご案内",
-                virtualAccountInfoDesc: "入金期限内に口座にお振込みいただくと決済が完了します。未入金の場合は自動的にキャンセルされます。",
-                phonePayInfoDesc: "携帯電話料金と合算して請求されます。決済後にキャンセルした場合は翌月の料金から差し引かれます。",
-                termFinance: "電子金融取引利用規約",
-                termPrivacyCollect: "個人情報収集利用案内",
-                termPrivacyProvide: "個人情報の提供・委託への同意",
-                termViewBtn: "確認",
-                installmentSelect: "分割払いを選択",
-                lumpSum: "一括払い",
-                inst2mFree: "2ヶ月 (無利息)",
-                inst3mFree: "3ヶ月 (無利息)",
-                inst5m: "5ヶ月",
-                inst6mFree: "6ヶ月 (無利息)",
-                inst12m: "12ヶ月",
-                installmentNotice: "5万ウォン以上のお支払いから分割払いを選択できます。",
-                btnNext: "次へ",
-                btnConfirm: "確認",
-                successTitle: "決済完了",
-                successDesc: "ご注文の商品のお支払いが<br>正常に完了しました。",
-                cancelConfirm: "決済をキャンセルしますか？\n入力された情報は保存されません。",
-                cancelAlert: "決済ウィンドウが閉じられました。"
-            }
-        };
+      <!-- 전자금융거래 이용약관 modal -->
+      <div class="terms-content" id="terms1"></div>
+      <!-- .전자금융거래 이용약관 modal -->
 
-        let currentLang = 'ko';
+      <!-- 개인정보수집 이용안내 modal -->
+      <div class="terms-content" id="terms2"></div>
+      <!-- ..개인정보수집 이용안내 modal -->
 
-        function changeLanguage(lang) {
-            currentLang = lang;
-            const t = i18n[lang];
-            
-            // data-i18n 속성이 있는 텍스트 일괄 갱신 (HTML 태그 지원을 위해 innerHTML 사용)
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) {
-                    el.innerHTML = t[key];
-                }
-            });
-            
-            // 설명 텍스트 수동 업데이트
-            const categoryDesc = document.getElementById('categoryDesc');
-            if (categoryDesc) {
-                if (currentCategory === 'card') {
-                    categoryDesc.textContent = lang === 'ko' ? '카드사를 선택해주세요' : 
-                                              lang === 'en' ? 'Please select a card company' : 
-                                              lang === 'zh' ? '请选择信用卡公司' : 'カード会社を選択してください';
-                } else if (currentCategory === 'easy') {
-                    categoryDesc.textContent = lang === 'ko' ? '사용하실 간편결제를 선택해주세요' : 
-                                              lang === 'en' ? 'Please select easy payment' : 
-                                              lang === 'zh' ? '请选择快捷支付' : '簡易決済を選択してください';
-                } else {
-                    categoryDesc.textContent = lang === 'ko' ? '결제 수단을 선택해주세요' : 
-                                              lang === 'en' ? 'Please select payment method' : 
-                                              lang === 'zh' ? '请选择支付方式' : '決済方法を選択してください';
-                }
-            }
-            
-            // 결제 버튼 텍스트 업데이트
-            if (currentMethod) {
-                updatePayButtonText(currentMethod);
-            }
-        }
+      <!-- 개인정보 제공 및 위탁 동의 modal -->
+      <div class="terms-content" id="terms3"></div>
+      <!-- ..개인정보 제공 및 위탁 동의 modal -->
 
-        let currentCategory = 'card';
-        let currentMethod = 'card';
-        let selectedCardCompany = null;
-        let currentCardStep = 1; // 1: 카드사/약관, 2: 할부선택, 3: 앱결제
-        let receiptType = 'personal';
+      <!-- 결제 완료 modal -->
+      <div class="complete-modal" id="completeModal">
+        <div class="complete-modal-dim"></div>
 
-        // 페이지 로드 시 초기화
-        window.onload = function() {
-            selectCategory('card');
-        };
+        <div class="complete-modal-content">
+          <div class="complete-icon">
+            <img src="img/common/ico-complete.svg" alt="">
+          </div>
 
-        // 카테고리 선택
-        function selectCategory(category) {
-            currentCategory = category;
-            
-            // 모든 이용약관 동의 체크박스 해제 (초기화)
-            document.querySelectorAll('.agree-item, .agree-item-inline, #agreeAll, #agreeAllInline').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            // 약관 관련 UI(아이콘, 버튼 등) 상태 최신화
-            if (typeof updateAgreeUI === 'function') updateAgreeUI();
-            if (typeof updateAgreeInlineUI === 'function') updateAgreeInlineUI();
-            
-            // 카테고리 버튼 상태 업데이트
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(`cat-${category}`).classList.add('active');
-            
-            const subMethodArea = document.getElementById('subMethodArea');
-            const subMethodGrid = document.getElementById('subMethodGrid');
-            const categoryDesc = document.getElementById('categoryDesc');
-            
-            if (category === 'card') {
-                subMethodArea.classList.add('hidden');
-                categoryDesc.textContent = '카드사를 선택해주세요';
-                selectMethod('card');
-            } else {
-                subMethodArea.classList.remove('hidden');
-                categoryDesc.textContent = category === 'easy' ? '사용하실 간편결제를 선택해주세요' : '결제 수단을 선택해주세요';
-                
-                // 하위 결제 수단 렌더링
-                renderSubMethods(category);
-                
-                // 첫 번째 수단 자동 선택 (선택 사항)
-                if (category === 'other') {
-                    selectMethod('virtual');
-                } else if (category === 'easy') {
-                    // 간편결제의 경우 아무것도 선택되지 않도록 폼 초기화
-                    document.querySelectorAll('[id^="form-"]').forEach(form => {
-                        form.classList.add('hidden');
-                    });
-                    document.getElementById('receiptSection').classList.add('hidden');
-                    
-                    // 기존 카드 관련 화면 명시적 숨김
-                    document.getElementById('cardCompanySelection').classList.add('hidden');
-                    document.getElementById('installmentSelection').classList.add('hidden');
-                    document.getElementById('appCardSelection').classList.add('hidden');
-                    document.getElementById('cardInfoForm').classList.add('hidden');
-                    document.getElementById('cardInlineTerms').classList.add('hidden');
-                    document.getElementById('footerSection').classList.add('hidden');
-                    
-                    currentMethod = null;
-                }
-            }
-        }
+          <h2 data-i18n="complete.title">결제 완료</h2>
+          <p data-i18n-html="complete.desc">주문하신 상품의 결제가<br>성공적으로 완료되었습니다.</p>
 
-        // 하위 결제 수단 렌더링
-        function renderSubMethods(category) {
-            const grid = document.getElementById('subMethodGrid');
-            let methods = [];
-            
-            if (category === 'easy') {
-                methods = [
-                    { id: 'kakao', name: '카카오페이', img: 'data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjUwIiBmaWxsPSIjRkZFQjAwIi8+PHRleHQgeD0iNTAiIHk9IjU2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iMzQiIGZpbGw9IiMwMDAwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIj5wYXk8L3RleHQ+PC9zdmc+', color: 'bg-transparent text-yellow-800' },
-                    { id: 'naver', name: '네이버페이', img: 'data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjUwIiBmaWxsPSIjMDNDNzVBIi8+PHRleHQgeD0iNTAiIHk9IjU2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LXNpemU9IjQ1IiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+TjwvdGV4dD48L3N2Zz4=', color: 'bg-transparent text-green-500' },
-                    { id: 'toss', name: '토스페이', img: 'data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjUwIiBmaWxsPSIjMDA1MEZGIi8+PHRleHQgeD0iNTAiIHk9IjU2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LXNpemU9IjI4IiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+dG9zczwvdGV4dD48L3N2Zz4=', color: 'bg-transparent text-blue-600' },
-                    { id: 'payco', name: '페이코', img: 'data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjUwIiBmaWxsPSIjRkEyODI4Ii8+PHRleHQgeD0iNTAiIHk9IjU2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LXNpemU9IjIyIiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+UEFZQ088L3RleHQ+PC9zdmc+', color: 'bg-transparent text-red-500' }
-                ];
-            } else if (category === 'other') {
-                methods = [
-                    { id: 'virtual', name: '가상계좌', icon: 'fa-file-invoice-dollar', color: 'bg-purple-50 text-purple-600' },
-                    { id: 'phone', name: '휴대폰', icon: 'fa-mobile-alt', color: 'bg-orange-50 text-orange-600' }
-                ];
-            }
-            
-            grid.innerHTML = methods.map(m => `
-                <button onclick="selectMethod('${m.id}')" id="btn-${m.id}" class="payment-method-card group flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-gray-100 bg-white hover:border-primary/30 hover:bg-blue-50/30 transition-all duration-300">
-                    <div class="w-12 h-12 rounded-full ${m.color} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300 shadow-sm overflow-hidden">
-                        ${m.img ? `<img src="${m.img}" alt="${m.name}" class="w-full h-full object-cover">` : `<i class="fas ${m.icon} text-lg"></i>`}
-                    </div>
-                    <span class="text-[11px] font-bold text-gray-600 group-hover:text-primary transition-colors">${m.name}</span>
-                </button>
-            `).join('');
-        }
+          <div class="complete-info">
+            <dl>
+              <dt data-i18n="complete.amount">결제금액</dt>
+              <dd data-i18n="complete.amountValue">125,000 원</dd>
+            </dl>
+            <dl>
+              <dt data-i18n="complete.method">결제수단</dt>
+              <dd data-i18n="complete.methodValue">네이버페이</dd>
+            </dl>
+          </div>
 
-        // 결제 수단 선택
-        function selectMethod(method) {
-            currentMethod = method;
-            
-            // 세부 결제 수단(가상계좌, 휴대폰, 페이 등) 선택/변경 시 약관 동의 항상 초기화
-            document.querySelectorAll('.agree-item, .agree-item-inline, #agreeAll, #agreeAllInline').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            if (typeof updateAgreeUI === 'function') updateAgreeUI();
-            if (typeof updateAgreeInlineUI === 'function') updateAgreeInlineUI();
-            
-            // 모든 하위 버튼 비활성화
-            document.querySelectorAll('.payment-method-card').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // 선택된 버튼 활성화 (존재하는 경우)
-            const activeBtn = document.getElementById(`btn-${method}`);
-            if (activeBtn) activeBtn.classList.add('active');
-            
-            // 모든 폼 및 카드 관련 화면 숨기기
-            document.querySelectorAll('[id^="form-"]').forEach(form => {
-                form.classList.add('hidden');
-            });
-            document.getElementById('cardCompanySelection').classList.add('hidden');
-            document.getElementById('installmentSelection').classList.add('hidden');
-            document.getElementById('appCardSelection').classList.add('hidden');
-            document.getElementById('cardInfoForm').classList.add('hidden');
-            
-            // 해당 폼 표시
-            const formMap = {
-                'card': 'cardCompanySelection',
-                'virtual': 'form-virtual',
-                'phone': 'form-phone',
-                'kakao': 'form-easy',
-                'naver': 'form-easy',
-                'toss': 'form-easy',
-                'payco': 'form-easy'
-            };
-            
-            const targetForm = document.getElementById(formMap[method]);
-            if (targetForm) targetForm.classList.remove('hidden');
-            
-            // 간편결제 아이콘/제목 업데이트
-            if (['kakao', 'naver', 'toss', 'payco'].includes(method)) {
-                updateEasyPaymentUI(method);
-            }
-            
-            // 현금영수증 섹션 표시/숨김
-            const receiptSection = document.getElementById('receiptSection');
-            if (['virtual', 'phone'].includes(method)) {
-                receiptSection.classList.remove('hidden');
-            } else {
-                receiptSection.classList.add('hidden');
-            }
-
-            // 결제 버튼 텍스트 업데이트
-            updatePayButtonText(method);
-
-            // 하단 버튼 컨테이너 표시
-            document.getElementById('payBtnContainer').classList.remove('hidden');
-            
-            // 하단 영역 노출 여부 결정
-            const footerSection = document.getElementById('footerSection');
-            if (method === 'card') {
-                // 카드는 할부 선택 완료 전까지 숨김
-                footerSection.classList.add('hidden');
-            } else {
-                // 간편결제 및 기타 결제는 선택 즉시 노출
-                footerSection.classList.remove('hidden');
-                
-                // 화면 하단 약관 및 결제 버튼이 잘 보이도록 자동 스크롤
-                setTimeout(() => {
-                    footerSection.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                }, 100);
-            }
-        }
-
-        // 결제 버튼 텍스트 업데이트 함수
-        function updatePayButtonText(method) {
-            const btnText = document.getElementById('btnText');
-            const btn = document.getElementById('payBtn');
-            const amount = "125,000";
-            
-            // 기본 결제 색상은 레드
-            btn.classList.add('bg-[--cj-red]', 'hover:bg-[#c11f17]');
-            btn.classList.remove('bg-[--cj-blue]', 'hover:bg-[#002a6d]');
-            
-            // 다국어 번역 키 가져오기
-            const tCurrency = i18n[currentLang].currency || '원';
-            const tPay = i18n[currentLang].payBtn || '결제하기';
-            
-            // 띄어쓰기를 포함한 접미사 (예: "125,000 KRW Pay" / "125,000원 결제하기")
-            const suffix = `${amount}${currentLang === 'ko' ? '' : ' '}${tCurrency} ${tPay}`;
-            
-            if (method === 'card') {
-                if (selectedCardCompany) {
-                    btnText.textContent = `${selectedCardCompany.name} ${suffix}`;
-                } else {
-                    btnText.textContent = suffix;
-                }
-            } else if (['kakao', 'naver', 'toss', 'payco'].includes(method)) {
-                // 간편결제 서비스명은 고유명사이므로 일단 한글 유지 (또는 추후 번역 추가 가능)
-                const names = { kakao: '카카오페이', naver: '네이버페이', toss: '토스페이', payco: '페이코' };
-                btnText.textContent = `${names[method]} ${suffix}`;
-            } else if (method === 'virtual') {
-                // 임시로 가상계좌/휴대폰 이름도 간단히 번역
-                const vName = currentLang === 'ko' ? '가상계좌' : currentLang === 'en' ? 'Virtual Account' : currentLang === 'zh' ? '虚拟账户' : '仮想口座';
-                btnText.textContent = `${vName} ${suffix}`;
-            } else if (method === 'phone') {
-                const pName = currentLang === 'ko' ? '휴대폰' : currentLang === 'en' ? 'Mobile' : currentLang === 'zh' ? '手机' : '携帯電話';
-                btnText.textContent = `${pName} ${suffix}`;
-            } else {
-                btnText.textContent = suffix;
-            }
-        }
-
-        function resetCardSteps() {
-            // 단계 인디케이터가 제거되어 로직 삭제
-        }
-
-        // 카드사 선택
-        function selectCardCompany(code, name, color) {
-            selectedCardCompany = { code, name, color };
-            
-            // 다른 카드사 선택 시 약관 동의 체크박스 항상 초기화
-            document.querySelectorAll('.agree-item, .agree-item-inline, #agreeAll, #agreeAllInline').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            if (typeof updateAgreeUI === 'function') updateAgreeUI();
-            if (typeof updateAgreeInlineUI === 'function') updateAgreeInlineUI();
-            
-            // 카드 선택 시 해외카드 영역이 펼쳐져 있다면 강제로 접기 (단, 선택한 카드가 해외카드인 경우는 예외)
-            const overseasCodes = ['visa', 'master', 'jcb', 'unionpay'];
-            if (!overseasCodes.includes(code)) {
-                const overseasCards = document.getElementById('overseasCardCompanies');
-                const toggleBtn = document.getElementById('toggleOverseasCards');
-                if (overseasCards && !overseasCards.classList.contains('hidden')) {
-                    overseasCards.classList.add('hidden');
-                    if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> <span>해외카드 더보기</span>';
-                }
-            }
-            
-            // 모든 카드사 버튼 비활성화
-            document.querySelectorAll('.card-company-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            
-            // 선택된 버튼 활성화 (이벤트 객체를 통한 안전한 접근)
-            const ev = window.event || event;
-            if (ev && ev.currentTarget) {
-                ev.currentTarget.classList.add('selected');
-            } else if (ev && ev.target) {
-                const btn = ev.target.closest('.card-company-btn');
-                if (btn) btn.classList.add('selected');
-            }
-            
-            // 선택된 카드사 정보 업데이트
-            document.getElementById('selectedCardName').textContent = name;
-            document.getElementById('selectedCardLogo').style.backgroundColor = color;
-            document.getElementById('selectedCardLogo').textContent = name.substring(0, 2);
-            
-            document.getElementById('instCardName').textContent = name;
-            document.getElementById('instCardLogo').style.backgroundColor = color;
-            document.getElementById('instCardLogo').textContent = name.substring(0, 2);
-            
-            // 카드사별 할부 혜택 업데이트
-            updateInstallmentOptions(code);
-            
-            // 화면 자동 전환 대신 인라인 약관 및 다음 버튼 노출
-            setTimeout(() => {
-                const inlineTerms = document.getElementById('cardInlineTerms');
-                inlineTerms.classList.remove('hidden');
-                inlineTerms.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                
-                // 하단 푸터는 계속 숨김 유지
-                document.getElementById('footerSection').classList.add('hidden');
-                
-                // 상태값 업데이트
-                currentCardStep = 1; 
-            }, 200);
-        }
-
-        // 할부 선택 후 앱카드로 이동
-        function proceedToAppCard() {
-            const inst = document.getElementById('installmentSelectMain');
-            const instText = inst.options[inst.selectedIndex].text;
-            selectedCardCompany.installment = instText;
-            
-            document.getElementById('installmentSelection').classList.add('hidden');
-            
-            // 앱카드 선택 UI 업데이트
-            updateAppCardUI(selectedCardCompany.name);
-            document.getElementById('appCardSelection').classList.remove('hidden');
-            currentCardStep = 3;
-
-            // 카드 앱 결제 단계에서는 하단 공통 결제 버튼 숨김 (중복 방지)
-            document.getElementById('payBtnContainer').classList.add('hidden');
-
-            // 할부 선택 단계에서는 약관이 이미 동의된 상태이므로 푸터 숨김
-            document.getElementById('footerSection').classList.add('hidden');
-        }
-
-        // 할부 선택에서 카드 선택으로 뒤로 가기
-        function backToCardCompany() {
-            document.getElementById('installmentSelection').classList.add('hidden');
-            document.getElementById('cardCompanySelection').classList.remove('hidden');
-            
-            // 하단 푸터 대신 인라인 영역 노출
-            document.getElementById('footerSection').classList.add('hidden');
-            document.getElementById('cardInlineTerms').classList.remove('hidden');
-            
-            currentCardStep = 1;
-        }
-
-        // 앱카드 선택에서 할부 선택으로 뒤로 가기
-        function backToInstallment() {
-            document.getElementById('appCardSelection').classList.add('hidden');
-            document.getElementById('installmentSelection').classList.remove('hidden');
-            currentCardStep = 2;
-        }
-
-        // 카드 다음 단계 처리 (인라인 버튼용)
-        function processCardNextStep() {
-            // 약관 동의 확인 (인라인용)
-            const agreeItems = document.querySelectorAll('.agree-item-inline');
-            const allAgreed = Array.from(agreeItems).every(item => item.checked);
-            
-            if (!allAgreed) {
-                alert('모든 필수 약관에 동의해주세요.');
-                return;
-            }
-
-            document.getElementById('cardCompanySelection').classList.add('hidden');
-            document.getElementById('installmentSelection').classList.remove('hidden');
-            document.getElementById('footerSection').classList.add('hidden');
-            currentCardStep = 2;
-        }
-
-        // 인라인 전체 동의 토글
-        function toggleAllAgreeInline() {
-            const isChecked = document.getElementById('agreeAllInline').checked;
-            document.querySelectorAll('.agree-item-inline').forEach(item => {
-                item.checked = isChecked;
-            });
-            updateAgreeInlineUI();
-        }
-
-        // 인라인 개별 동의 체크
-        function checkAgreeInline() {
-            const allItems = document.querySelectorAll('.agree-item-inline');
-            const allChecked = Array.from(allItems).every(item => item.checked);
-            document.getElementById('agreeAllInline').checked = allChecked;
-            updateAgreeInlineUI();
-        }
-
-        // 인라인 약관 UI 업데이트
-        function updateAgreeInlineUI() {
-            const allItems = document.querySelectorAll('.agree-item-inline');
-            
-            const circle = document.getElementById('agreeAllCircleInline');
-            if (document.getElementById('agreeAllInline').checked) {
-                circle.classList.remove('hidden');
-            } else {
-                circle.classList.add('hidden');
-            }
-            
-            allItems.forEach(item => {
-                const icon = item.parentElement.querySelector('i.fa-check');
-                if (item.checked) {
-                    icon.classList.remove('text-gray-200');
-                    icon.classList.add('text-primary');
-                } else {
-                    icon.classList.remove('text-primary');
-                    icon.classList.add('text-gray-200');
-                }
-            });
-        }
-
-        // 앱카드 UI 업데이트
-        function updateAppCardUI(cardName) {
-            const shortName = cardName.replace('카드', '');
-            document.getElementById('appCardTitle').textContent = cardName;
-            document.getElementById('appPaymentLinkText').textContent = `${cardName} 앱으로 결제`;
-            
-            // 앱카드별 정보 (예시)
-            const appInfo = {
-                '삼성카드': { appName: 'monimo', desc: '모니모 앱에서 만나는 삼성카드 앱카드', icon: 'm', color: 'text-blue-600' },
-                '현대카드': { appName: '현대카드', desc: '현대카드 앱에서 간편하게 결제', icon: 'H', color: 'text-black' },
-                '신한카드': { appName: '신한 SOL페이', desc: '신한 SOL페이로 빠르고 안전하게', icon: 'S', color: 'text-blue-800' },
-                'KB국민카드': { appName: 'KB Pay', desc: 'KB Pay로 더 편리해진 결제', icon: 'K', color: 'text-yellow-600' },
-                'default': { appName: `${shortName} 앱카드`, desc: `${shortName} 앱에서 간편하게 결제하세요`, icon: shortName.substring(0,1), color: 'text-gray-800' }
-            };
-            
-            const info = appInfo[cardName] || appInfo['default'];
-            document.getElementById('appCardName').textContent = info.appName;
-            document.getElementById('appCardDesc').textContent = info.desc;
-            document.getElementById('appCardIcon').textContent = info.icon;
-            document.getElementById('appCardIcon').className = `font-bold text-xl ${info.color}`;
-        }
-
-        // 앱카드에서 상세 정보 입력 폼으로
-        function showCardInfoForm() {
-            document.getElementById('appCardSelection').classList.add('hidden');
-            document.getElementById('cardInfoForm').classList.remove('hidden');
-        }
-
-        // 카드사 앱 연결 시뮬레이션
-        function connectToCardApp(type = 'app') {
-            // 약관 동의 확인
-            if (!validateTerms()) return;
-            const overlay = document.getElementById('appConnectingOverlay');
-            const targetName = selectedCardCompany ? selectedCardCompany.name : '카드사';
-            
-            document.getElementById('connectingTarget').textContent = targetName;
-            
-            if (type === 'general') {
-                document.getElementById('connectingTitle').textContent = '결제 페이지 연결 중';
-                document.getElementById('connectingDesc').innerHTML = '안전한 결제를 위해<br><span class="font-bold text-gray-800">결제 전용 페이지</span>로 이동합니다.';
-            } else {
-                document.getElementById('connectingTitle').textContent = '카드사 앱 연결 중';
-                document.getElementById('connectingDesc').innerHTML = `안전한 결제를 위해<br><span class="font-bold text-gray-800">${targetName}</span> 앱으로 이동합니다.`;
-            }
-            
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-            
-            // 시뮬레이션: 2.5초 후 완료 처리
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                overlay.classList.remove('flex');
-                
-                // 결제 성공 팝업 표시
-                showSuccessPopup();
-            }, 2500);
-        }
-
-        function showSuccessPopup() {
-            const popup = document.getElementById('successPopup');
-            const methodText = document.getElementById('successMethodName');
-            
-            if (currentMethod === 'card' && selectedCardCompany) {
-                methodText.textContent = `${selectedCardCompany.name} (${selectedCardCompany.installment})`;
-            } else {
-                const names = { kakao: '카카오페이', naver: '네이버페이', toss: '토스페이', payco: '페이코', virtual: '가상계좌', phone: '휴대폰' };
-                methodText.textContent = names[currentMethod] || '결제 수단';
-            }
-            
-            popup.classList.remove('hidden');
-            popup.classList.add('flex');
-        }
-
-        function finishProcess() {
-            // 종료 (새로고침 또는 닫기 시뮬레이션)
-            location.reload();
-        }
-
-        // 상세 정보 입력 폼에서 앱카드로 뒤로가기
-        function backToAppCard() {
-            document.getElementById('cardInfoForm').classList.add('hidden');
-            document.getElementById('appCardSelection').classList.remove('hidden');
-        }
-
-        // 카드사별 할부 옵션 업데이트
-        function updateInstallmentOptions(cardCode) {
-            const select = document.getElementById('installmentSelect');
-            const options = {
-                'samsung': [
-                    { value: '0', text: '일시불' },
-                    { value: '2', text: '2개월 (무이자)' },
-                    { value: '3', text: '3개월 (무이자)' },
-                    { value: '5', text: '5개월' },
-                    { value: '6', text: '6개월 (무이자)' },
-                    { value: '10', text: '10개월' },
-                    { value: '12', text: '12개월 (무이자)' }
-                ],
-                'hyundai': [
-                    { value: '0', text: '일시불' },
-                    { value: '2', text: '2개월 (무이자)' },
-                    { value: '3', text: '3개월 (무이자)' },
-                    { value: '6', text: '6개월' },
-                    { value: '12', text: '12개월' }
-                ],
-                'kb': [
-                    { value: '0', text: '일시불' },
-                    { value: '2', text: '2개월' },
-                    { value: '3', text: '3개월 (무이자)' },
-                    { value: '6', text: '6개월 (무이자)' },
-                    { value: '12', text: '12개월' }
-                ],
-                'default': [
-                    { value: '0', text: '일시불' },
-                    { value: '2', text: '2개월' },
-                    { value: '3', text: '3개월' },
-                    { value: '5', text: '5개월' },
-                    { value: '6', text: '6개월' },
-                    { value: '10', text: '10개월' },
-                    { value: '12', text: '12개월' }
-                ]
-            };
-            
-            const cardOptions = options[cardCode] || options['default'];
-            select.innerHTML = cardOptions.map(opt => 
-                `<option value="${opt.value}">${opt.text}</option>`
-            ).join('');
-        }
-
-        // 뒤로 가기 (카드사 선택 화면으로)
-        function backToCardCompany() {
-            document.getElementById('installmentSelection').classList.add('hidden');
-            document.getElementById('appCardSelection').classList.add('hidden');
-            document.getElementById('cardInfoForm').classList.add('hidden');
-            document.getElementById('cardCompanySelection').classList.remove('hidden');
-            
-            // 하단 영역 숨김
-            document.getElementById('footerSection').classList.add('hidden');
-            
-            // 단계 인디케이터 리셋
-            resetCardSteps();
-            
-            // 선택 해제
-            document.querySelectorAll('.card-company-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            selectedCardCompany = null;
-        }
-
-        function updateEasyPaymentUI(method) {
-            const icons = {
-                'kakao': '<img src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjUwIiBmaWxsPSIjRkZFQjAwIi8+PHRleHQgeD0iNTAiIHk9IjU2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iMzQiIGZpbGw9IiMwMDAwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGFsaWdubWVudC1iYXNlbGluZT0ibWlkZGxlIj5wYXk8L3RleHQ+PC9zdmc+" alt="카카오페이" class="w-full h-full object-cover">',
-                'naver': '<img src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjUwIiBmaWxsPSIjMDNDNzVBIi8+PHRleHQgeD0iNTAiIHk9IjU2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LXNpemU9IjQ1IiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+TjwvdGV4dD48L3N2Zz4=" alt="네이버페이" class="w-full h-full object-cover">',
-                'toss': '<img src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjUwIiBmaWxsPSIjMDA1MEZGIi8+PHRleHQgeD0iNTAiIHk9IjU2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LXNpemU9IjI4IiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+dG9zczwvdGV4dD48L3N2Zz4=" alt="토스페이" class="w-full h-full object-cover">',
-                'payco': '<img src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjUwIiBmaWxsPSIjRkEyODI4Ii8+PHRleHQgeD0iNTAiIHk9IjU2IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LXNpemU9IjIyIiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+UEFZQ088L3RleHQ+PC9zdmc+" alt="페이코" class="w-full h-full object-cover">'
-            };
-            
-            const names = {
-                'kakao': '카카오페이',
-                'naver': '네이버페이',
-                'toss': '토스페이',
-                'payco': '페이코'
-            };
-            
-            document.getElementById('easyIcon').innerHTML = icons[method];
-            document.getElementById('easyIcon').className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-sm';
-            document.getElementById('easyTitle').textContent = names[method];
-            document.getElementById('easyMethodName').textContent = names[method];
-        }
-
-        // 카드 번호 포맷팅
-        function formatCardNumber(input) {
-            let value = input.value.replace(/\D/g, '');
-            value = value.substring(0, 16);
-            
-            let formattedValue = '';
-            for (let i = 0; i < value.length; i++) {
-                if (i > 0 && i % 4 === 0) {
-                    formattedValue += ' - ';
-                }
-                formattedValue += value[i];
-            }
-            
-            input.value = formattedValue;
-            
-            // 카드사 아이콘 변경
-            const icon = document.getElementById('cardIcon');
-            if (value.startsWith('4')) {
-                icon.className = 'fab fa-cc-visa text-2xl text-blue-600';
-            } else if (value.startsWith('5')) {
-                icon.className = 'fab fa-cc-mastercard text-2xl text-red-600';
-            } else if (value.startsWith('3')) {
-                icon.className = 'fab fa-cc-amex text-2xl text-blue-800';
-            } else if (value.startsWith('9')) {
-                icon.className = 'fas fa-credit-card text-2xl text-primary';
-            } else {
-                icon.className = 'fas fa-credit-card text-2xl text-gray-400';
-            }
-        }
-
-        // 유효기간 포맷팅
-        function formatExpiry(input) {
-            let value = input.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.substring(0, 2) + ' / ' + value.substring(2, 4);
-            }
-            input.value = value;
-        }
-
-        // 휴대폰 번호 포맷팅
-        function formatPhone(input) {
-            let value = input.value.replace(/\D/g, '');
-            if (value.length >= 3 && value.length <= 7) {
-                value = value.substring(0, 3) + '-' + value.substring(3);
-            } else if (value.length > 7) {
-                value = value.substring(0, 3) + '-' + value.substring(3, 7) + '-' + value.substring(7, 11);
-            }
-            input.value = value;
-        }
-
-        // 현금영수증 토글
-        function toggleReceipt() {
-            const form = document.getElementById('receiptForm');
-            const isChecked = document.getElementById('receiptCheck').checked;
-            
-            if (isChecked) {
-                form.classList.remove('hidden');
-                
-                // 현금영수증 폼이 켜질 때 화면 스크롤 자동 이동
-                setTimeout(() => {
-                    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-            } else {
-                form.classList.add('hidden');
-            }
-        }
-
-        // 현금영수증 타입 설정
-        function setReceiptType(type) {
-            receiptType = type;
-            document.getElementById('receipt-personal').className = type === 'personal' 
-                ? 'flex-1 py-2 rounded-lg border-2 border-primary bg-blue-50 text-primary text-sm font-medium transition-all'
-                : 'flex-1 py-2 rounded-lg border-2 border-gray-200 text-gray-600 text-sm font-medium hover:border-gray-300 transition-all';
-                
-            document.getElementById('receipt-business').className = type === 'business'
-                ? 'flex-1 py-2 rounded-lg border-2 border-primary bg-blue-50 text-primary text-sm font-medium transition-all'
-                : 'flex-1 py-2 rounded-lg border-2 border-gray-200 text-gray-600 text-sm font-medium hover:border-gray-300 transition-all';
-            
-            const input = document.getElementById('receiptNumber');
-            input.placeholder = type === 'personal' ? '휴대폰 번호 (- 없이)' : '사업자등록번호 (- 없이)';
-        }
-
-        // 전체 동의 토글
-        function toggleAllAgree() {
-            const isChecked = document.getElementById('agreeAll').checked;
-            document.querySelectorAll('.agree-item').forEach(item => {
-                item.checked = isChecked;
-            });
-            updateAgreeUI();
-        }
-
-        // 개별 동의 체크
-        function checkAgree() {
-            const allItems = document.querySelectorAll('.agree-item');
-            const allChecked = Array.from(allItems).every(item => item.checked);
-            document.getElementById('agreeAll').checked = allChecked;
-            updateAgreeUI();
-        }
-
-        // 약관 UI 업데이트 (아이콘 색상 및 전체동의 원형 체크박스)
-        function updateAgreeUI() {
-            const allItems = document.querySelectorAll('.agree-item');
-            const allChecked = Array.from(allItems).every(item => item.checked);
-            
-            // 전체동의 원형 체크박스 내부 원 표시/숨김
-            const circle = document.getElementById('agreeAllCircle');
-            if (document.getElementById('agreeAll').checked) {
-                circle.classList.remove('hidden');
-            } else {
-                circle.classList.add('hidden');
-            }
-            
-            // 개별 체크 아이콘 색상 업데이트
-            allItems.forEach(item => {
-                const icon = item.parentElement.querySelector('i.fa-check');
-                if (item.checked) {
-                    icon.classList.remove('text-gray-200');
-                    icon.classList.add('text-primary');
-                } else {
-                    icon.classList.remove('text-primary');
-                    icon.classList.add('text-gray-200');
-                }
-            });
-        }
-
-        // 약관 보기
-        function showTerms(type) {
-            const modal = document.getElementById('termsModal');
-            const title = document.getElementById('termsTitle');
-            const content = document.getElementById('termsContent');
-            
-            const titleKey = type === 'finance' ? 'termFinance' : type === 'privacy_collect' ? 'termPrivacyCollect' : 'termPrivacyProvide';
-            title.textContent = i18n[currentLang][titleKey];
-            
-            const koTermsData = {
-                'finance': '제1조 (목적)<br><br>이 약관은 CJ올리브네트웍스(주)(이하 \'회사\'라 합니다)가 제공하는 전자지급결제대행서비스, 선불전자지급수단의 발행 및 관리 서비스를 이용자가 이용함에 있어 회사와 이용자 사이의 전자금융거래에 관한 기본적인 사항을 정함을 목적으로 합니다.<br><br>제2조 (용어의 정의)<br><br>이 약관에서 정하는 용어의 정의는 다음과 같습니다.<br><br>1. \'전자금융거래\'라 함은 회사가 전자적 장치를 통하여 전자지급결제대행서비스, 선불전자지급수단의 발행 및 관리 서비스 (이하 \'전자금융거래 서비스\'라고 합니다)를 제공하고, 이용자가 회사의 종사자와 직접 대면하거나 의사소통을 하지 아니하고 자동화된 방식으로 이를 이용하는 거래를 말합니다.<br><br>2. \'전자지급수단\'이라 함은 선불전자지급수단, 신용카드 등 전자금융거래법 제2조 제11호에서 정하는 전자적 방법에 따른 지급수단을 말합니다.<br><br>3. \'전자지급결제대행서비스\'라 함은 전자적 방법으로 재화의 구입 또는 용역의 이용에 있어서 지급결제정보를 송신하거나 수신하는 것 또는 그 대가의 정산을 대행하거나 매개하는 서비스를 말합니다.<br><br>4. ‘선불전자지급수단’이라 함은 회사가 운영하는 웹사이트 및 제휴사 서비스 등에서 재화 또는 용역(이하 ‘재화 등’이라고 합니다)을 구매할 수 있는 서비스와 같이 회사가 발행 당시 미리 회원에게 공지한 전자금융거래법 상 선불전자지급수단을 말합니다.<br><br>5. ‘충전’이라 함은 선불전자지급수단의 일정액을 확보하기 위해 회사가 지정한 지불수단을 통해 선불전자지급수단을 구매하거나, 회사 또는 회사가 지정한 제3자의 서비스 등(이하 ‘서비스 등’이라 합니다)에서의 활동을 통해 선불전자지급수단을 적립 받는 것을 말합니다.<br><br>6. \'이용자\'라 함은 이 약관에 동의하고 회사가 제공하는 전자금융거래 서비스를 이용하는 자를 말합니다.<br><br>7. \'접근매체\'라 함은 전자금융거래에 있어서 거래지시를 하거나 이용자 및 거래내용의 진실성과 정확성을 확보하기 위하여 사용되는 수단 또는 정보로서 전자식 카드 및 이에 준하는 전자적 정보 (신용카드번호 를 포함한다), \'전자서명법\'상의 인증서, 회사에 등록된 이용자번호, 이용자의 생체정보, 이상의 수단이나 정보를 사용하는데 필요한 비밀번호 등 전자금융거래법 제2조 제10호에서 정하고 있는 것을 말합니다.<br><br>8. \'거래지시\'라 함은 이용자가 본 약관에 의하여 체결되는 전자금융거래계약에 따라 회사에 대하여 전자금융거래의 처리를 지시하는 것을 말합니다.<br><br>9. \'오류\'라 함은 이용자의 고의 또는 과실 없이 전자금융거래가 전자금융거래계약 또는 이용자의 거래지시에 따라 이행되지 아니한 경우를 말합니다.<br><br>10. \'전자지급거래\'라 함은 자금을 주는 자(이하 \'지급인\'이라 합니다)가 회사로 하여금 전자지급수단을 이용하여 자금을 받는 자(이하 \'수취인\'이라 합니다)에게 자금을 이동하게 하는 전자금융거래를 말합니다.<br><br>11. \'전자적 장치\' 라 함은 전자금융거래정보를 전자적 방법으로 전송하거나 처리하는데 이용되는 장치로서 현금자동지급기, 자동입출금기, 지급용단말기, 컴퓨터, 전화기 그 밖에 전자적 방법으로 정보를 전송하거나 처리하는 장치를 말합니다.<br><br>제3조 (약관의 명시 및 변경)<br><br>1. 회사가 이 약관을 변경하는 때에는 변경되는 약관의 시행일 1월 전에 그 내용을 해당 전자금융거래를 수행하는 전자적 장치(해당 전자적 장치에 게시하기 어려울 경우에는 이용자가 접근하기 용이한 전자적 장치)에 게시하고 이용자에게 통지하여야 합니다. 다만, 이용자가 이의를 제기할 경우 회사는 이용자에게 적절한 방법으로 약관 변경내용을 통지하였음을 확인해 주어야 합니다.<br><br>2. 제1항에도 불구하고 법령의 개정으로 인하여 긴급하게 약관을 변경한 때에는 변경된 약관을 전자적 장치에 최소 1개월 이상 게시하고 이용자에게 통지하여야 합니다.<br><br>3. 회사가 제1항 및 제2항에 따라 변경된 약관을 게시하거나 통지하는 경우에는 “이용자가 약관의 변경내용이 게시되거나 통지된 후부터 변경되는 약관의 시행일 전의 영업일까지 이내에 계약을 해지할 수 있으며, 약관의 변경내용에 이의를 제기하지 아니하는 경우 약관의 변경내용에 승인한 것으로 본다.”라는 취지의 내용을 통지하여야 합니다.<br><br>4. 이용자는 약관의 변경내용이 게시되거나 통지된 후부터 변경되는 약관의 시행일 전의 영업일까지 전자금융거래의 계약을 해지할 수 있고, 약관의 변경내용에 대하여 이의를 제기하지 아니하는 경우에는 약관의 변경을 승인한 것으로 봅니다.<br><br>제4조 (전자지급결제대행서비스의 종류)<br><br>회사가 제공하는 전자지급결제대행서비스는 지급결제수단에 따라 다음과 같이 구별됩니다.<br><br>1. 신용카드결제대행서비스: 이용자가 결제대금의 지급을 위하여 제공한 지급결제수단이 신용카드인 경우로, 회사가 전자결제시스템을 통하여 신용카드 지불정보를 송,수신하고 결제대금의 정산을 대행하거나 매개하는 서비스를 말합니다.<br><br>2. 계좌이체대행서비스: 이용자가 결제대금을 회사의 전자결제시스템을 통하여 금융기관에 등록한 자신의 계좌에서 출금하여 원하는 계좌로 이체할 수 있는 실시간 송금 서비스를 말합니다.<br><br>3. 가상계좌서비스: 이용자가 결제대금을 현금으로 결제하고자 하는 경우 회사의 전자결제시스템을 통하여 자동으로 이용자만의 고유한 일회용 계좌의 발급을 통하여 결제대금의 지급이 이루어지는 서비스를 말합니다.<br><br>4. 간편결제서비스 : 이용자가 결제대금의 지급을 위하여 제공한 지급결제수단이 신용카드, 계좌이체인 경우로서, 정보를 매번 입력할 필요 없이 관련 정보의 한번 등록만으로 상품 결제가 가능한 서비스를 말합니다. 단, 간편결제서비스 신청 시 회사가 정하는 이용자의 본인확인 절차가 반드시 필요하며, 회사의 인증 및 승낙이 있어야 서비스를 이용할 수 있습니다.<br><br>5. 기타: 회사가 제공하는 서비스로서 지급결제수단의 종류에 따라 \'휴대폰 결제대행서비스\', \'ARS결제대행서비스\', \'상품권결제대행서비스\'등이 있습니다.<br><br>제5조 (선불전자지급수단의 충전 및 이용)<br><br>1. 이용자는 계좌출금, 기타 회사가 정하는 지불수단으로 선불전자지급수단을 구매하거나, 서비스 등에서의 활동으로 회사 또는 회사의 제휴사로부터 적립 받아 선불전자지급수단을 충전할 수 있습니다.<br><br>2. 회사가 지정한 지불 수단을 통한 선불전자지급수단 구매는 제1항에서 규정하는 지불 수단별로 지정된 금액으로 충전을 할 수 있으며, 지불 수단에 따라 자체 제한 금액이 있을 수 있습니다.<br><br>3. 이용자는 회사가 정한 기한 및 이용방법에 따라 선불전자지급수단을 이용할 수 있으며, 회사는 그 구체적인 사항을 본 약관 또는 선불전자지급수단 관련 서비스 페이지를 통해 공지합니다.<br><br>4. 이용자는 서비스 등에서 재화 등을 구매할 때 선불전자지급수단을 지불 수단으로 사용할 수 있습니다.<br><br>5. 선불전자지급수단은 재화 등의 구매완료 시점에 즉시 차감됩니다.<br><br>6. 이용자가 선불전자지급수단을 사용한 재화 등의 구매를 취소하는 경우 회사는 재화 등 구매시 사용한 선불전자지급수단을 재충전하는 것을 원칙으로 합니다.<br><br>제6조 (선불전자지급수단의 환급)<br><br>1. 이용자는 보유 중인 선불전자지급수단에 대해 회사에 요구할 경우 구매 선불 전액을 환급 받을 수 있습니다.<br><br>2. 다음 각 호에 해당하는 경우 구매 선불의 잔액 전부를 환급합니다.<br><br>① 천재지변 등의 사유로 서비스 등에서 재화 또는 용역을 제공하기 곤란하여 선불전자지급수단을 사용하지 못하게 된 경우<br>② 선불전자지급수단의 결함으로 서비스 등에서 재화 또는 용역을 제공하지 못하는 경우<br>③ 선불전자지급수단에 기록된 잔액이 충전금액의 30% 미만인 경우<br>④ 회사가 회원에게 불리하게 선불전자지급수단을 이용할 수 있는 가맹점을 축소하거나 선불전자지급수단의 이용 조건을 변경하는 경우.<br><br>다만, 다음 각 목의 경우는 제외됩니다.<br><br>가. 가맹점이 폐업한 경우<br>나. 가맹계약기간이 만료된 경우<br>다. 다른 가맹점에서 유사한 수준의 재화나 용역을 구입할 수 있는 경우<br>라. 전자금융거래법에 따라 가맹점 계약을 해지한 경우<br>마. 전자금융거래법 또는 다른 법령을 위반하여 회원 보호 및 건전한 거래질서를 저해할 우려가 있어 가맹점 계약을 해지한 경우<br>바. 그 밖에 법령에서 정한 정당한 이유가 있는 경우<br><br>3. 회원은 회사에서 정한 기한 및 이용방법에 따라 선불전자지급수단을 이용할 수 있으며, 회사는 환급 등 구체적인 사항을 개별 선불전자지급수단의 고객센터 페이지를 통해 안내합니다.<br><br>제7조 (이용시간)<br><br>1. 회사는 이용자에게 연중무휴 1일 24시간 전자금융거래 서비스를 제공함을 원칙으로 합니다. 단, 금융기관 및 기타 결제수단 발행업자의 사정에 따라 달리 정할 수 있습니다.<br><br>2. 회사는 정보통신설비의 보수, 점검 기타 기술상의 필요나 금융기관 기타 결제수단 발행업자의 사정에 의하여 서비스 중단이 불가피한 경우, 서비스 중단 3일 전까지 게시가능한 전자적 수단을 통하여 서비스 중단 사실을 게시한 후 서비스를 일시 중단할 수 있습니다.<br>다만, 시스템 장애복구, 긴급한 프로그램 보수, 외부요인 등 불가피한 경우에는 사전 게시 없이 서비스를 중단할 수 있습니다.<br><br>제8조 (접근매체의 선정과 사용 및 관리)<br><br>1. 회사는 전자금융거래 서비스 제공 시 접근매체를 선정하여 이용자의 신원, 권한 및 거래지시의 내용 등을 확인할 수 있습니다.<br><br>2. 이용자는 접근매체를 제3자에게 대여하거나 사용을 위임하거나 양도 또는 담보 목적으로 제공할 수 없습니다.<br><br>3. 이용자는 자신의 접근매체를 제3자에게 누설 또는 노출하거나 방치하여서는 안되며, 접근매체의 도용이나 위조 또는 변조를 방지하기 위하여 충분한 주의를 기울여야 합니다.<br><br>4. 회사는 이용자로부터 접근매체의 분실이나 도난 등의 통지를 받은 때에는 그 때부터 제3자가 그 접근매체를 사용함으로 인하여 이용자에게 발생한 손해를 배상할 책임이 있습니다.<br><br>제9조 (거래내용의 확인)<br><br>1. 회사는 이용자와 미리 약정한 전자적 방법을 통하여 이용자의 거래내용(이용자의 \'오류정정 요구사실 및 처리결과에 관한 사항\'을 포함합니다)을 확인할 수 있도록 하며, 이용자의 요청이 있는 경우에는 요청을 받은 날로부터 2주 이내에 모사전송 등의 방법으로 거래내용에 관한 서면을 교부합니다.<br><br>2. 회사가 이용자에게 제공하는 거래내용 중 거래계좌의 명칭 또는 번호, 거래의 종류 및 금액, 거래상대방을 나타내는 정보, 거래일자, 전자적 장치의 종류 및 전자적 장치를 식별할 수 있는 정보, 회사가 전자금융거래의 대가로 받은 수수료, 이용자의 출금 동의에 관한 사항, 전자금융거래의 신청 및 조건의 변경에 관한 사항과 해당 전자금융 거래와 관련한 전자적 장치의 접속기록은 5년간, 건당 거래금액이 1만원 이하인 소액 전자금융거래에 관한 기록, 전자지급수단 이용 시 거래승인에 관한 기록, 이용자의 오류정정 요구사실 및 처리결과에 관한 사항은 1년간의 기간을 대상으로 합니다.<br><br>3. 이용자가 제1항에서 정한 서면교부를 요청하고자 할 경우 다음의 주소 및 전화번호로 요청할 수 있습니다.<br><br>주소 : 서울특별시 용산구 한강대로 366(동자동) 트윈시티 10층<br>전화 : 1577-8888 (내선번호 3번 ‘결제문의’)<br>팩스 : 02-6252-0098<br>이메일 : onepg@cj.net<br><br>제10조 (오류의 정정 등)<br><br>1. 이용자는 전자금융거래 서비스를 이용함에 있어 오류가 있음을 안 때에는 회사에 대하여 그 정정을 요구할 수 있습니다.<br><br>2. 회사는 전항의 규정에 따른 오류의 정정요구를 받은 때 또는 스스로 오류가 있음을 안 때에는 이를 즉시 조사하여 처리한 후 정정요구를 받은 날부터 2주 이내에 그 결과를 이용자에게 알려드립니다.<br><br>제11조 (회사의 책임)<br><br>1. 접근매체의 위조나 변조로 발생한 사고로 인하여 이용자에게 발생한 손해에 대하여 배상책임이 있습니다.<br>다만 이용자가 제6조 제2항에 위반하거나 제3자가 권한 없이 이용자의 접근매체를 이용하여 전자금융거래를 할 수 있음을 알았거나 알 수 있었음에도 불구하고 이용자가 자신의 접근매체를 누설 또는 노출하거나 방치한 경우 그 책임의 전부 또는 일부를 이용자가 부담하게 할 수 있습니다.<br><br>2. 회사는 계약체결 또는 거래지시의 전자적 전송이나 처리과정에서 발생한 사고로 인하여 이용자에게 그 손해가 발생한 경우에는 그 손해를 배상할 책임이 있습니다.<br>다만 본 조 제1항 단서에 해당하거나 법인(\'중소기업기본법\' 제2조 제2항에 의한 소기업을 제외합니다)인 이용자에게 손해가 발생한 경우로서 회사가 사고를 방지하기 위하여 보안절차를 수립하고 이를 철저히 준수하는 등 합리적으로 요구되는 충분한 주의의무를 다한 경우 그 책임의 전부 또는 일부를 이용자가 부담하게 할 수 있습니다.<br><br>3. 회사는 전자금융거래를 위한 전자적 장치 또는 ‘정보통신망 이용촉진 및 정보보호 등에 관한 법률’ 제2조제1항제1호에 따른 정보통신망에 침입하여 거짓이나 그 밖의 부정한 방법으로 획득한 접근매체의 이용으로 발생한 사고로 인하여 이용자에게 그 손해가 발생한 경우에는 그 손해를 배상할 책임이 있습니다.<br><br>제12조 (전자지급거래계약의 효력)<br><br>1. 회사는 이용자의 거래지시가 전자지급거래에 관한 경우 그 지급절차를 대행하며, 전자지급거래에 관한 거래지시의 내용을 전송하여 지급이 이루어지도록 합니다.<br><br>2. 회사는 이용자의 전자지급거래에 관한 거래지시에 따라 지급거래가 이루어지지 않은 경우 수령한 자금을 이용자에게 반환하여야 합니다.<br><br>제13조 (거래지시의 철회)<br><br>1. 이용자는 전자지급거래에 관한 거래지시의 경우 지급의 효력이 발생하기 전까지 거래지시를 철회할 수 있습니다.<br><br>2. 전항의 지급의 효력이 발생 시점이란 (i) 전자자금이체의 경우에는 거래지시된 금액의 정보에 대하여 수취인의 계좌가 개설되어 있는 금융기관의 계좌 원장에 입금기록이 끝난 때 (ii) 그 밖의 전자지급수단으로 지급하는 경우에는 거래지시된 금액의 정보가 수취인의 계좌가 개설되어 있는 금융기관의 전자적 장치에 입력이 끝난 때를 말합니다.<br><br>3. 이용자는 지급의 효력이 발생한 경우에는 전자상거래 등에서의 소비자보호에 관한 법률 등 관련 법령상 청약의 철회의 방법에 따라 결제대금을 반환 받을 수 있습니다.<br><br>제14조 (전자지급결제대행 서비스 이용 기록의 생성 및 보존)<br><br>1. 회사는 이용자가 전자금융거래의 내용을 추적, 검색하거나 그 내용에 오류가 발생한 경우에 이를 확인하거나 정정할 수 있는 기록을 생성하여 보존합니다.<br><br>2. 전항의 규정에 따라 회사가 보존하여야 하는 기록의 종류 및 보존방법은 제7조 제2항에서 정한 바에 따릅니다.<br><br>제15조 (전자금융거래정보의 제공금지)<br><br>1. 회사는 전자금융거래 서비스를 제공함에 있어서 취득한 이용자의 인적사항, 이용자의 계좌, 접근매체 및 전자금융거래의 내용과 실적에 관한 정보 또는 자료를 이용자의 동의를 얻지 아니하고 제3자에게 제공, 누설하거나 업무상 목적 외에 사용하지 아니합니다.<br><br>제16조 (분쟁처리 및 분쟁조정)<br><br>1. 이용자는 다음의 분쟁처리 책임자 및 담당자에 대하여 전자금융거래 서비스 이용과 관련한 의견 및 불만의 제기, 손해배상의 청구 등의 분쟁처리를 요구할 수 있습니다.<br><br>담당자 : 통신과금서비스 담당부서장<br>전화 : 1577-8888 (내선번호 3번 ‘결제문의’)<br>팩스 : 02-6252-0098<br>이메일 : onepg@cj.net<br><br>2. 이용자가 회사에 대하여 분쟁처리를 신청한 경우에는 회사는 15일 이내에 이에 대한 조사 또는 처리 결과를 이용자에게 안내합니다.<br><br>3. 이용자는 제2항에 따른 회사의 분쟁처리결과에 대하여 이의가 있을 경우에는 금융감독원 금융분쟁조정위원회, 한국소비자원 소비자분쟁조정위원회 등을 통하여 회사의 전자금융거래서비스의 이용과 관련한 분쟁조정을 신청할 수 있습니다.<br><br>제17조 (회사의 안정성 확보 의무)<br><br>1. 회사는 전자금융거래의 안전성과 신뢰성을 확보할 수 있도록 전자금융거래의 종류별로 전자적 전송이나 처리를 위한 인력, 시설, 전자적 장치 등의 정보기술부문 및 전자금융업무에 관하여 금융위원회가 정하는 기준을 준수합니다.<br><br>제18조 (약관 외 준칙 및 관할)<br><br>1. 이 약관에서 정하지 아니한 사항에 대하여는 전자금융거래법, 전자상거래 등에서의 소비자 보호에 관한 법률, 통신판매에 관한 법률, 여신전문금융업법 등 소비자보호 관련 법령에서 정한 바에 따릅니다.<br><br>2. 회사와 이용자간에 발생한 분쟁에 관한 관할은 민사소송법에서 정한 바에 따릅니다.<br><br>부칙&lt;제 1호, 2006.12.26&gt;<br>본 약관은 2007년 1월 1일부터 시행한다.<br><br>부칙&lt;제 2호, 2011.05.02&gt;<br>본 약관은 2011년 06월 20일부터 시행한다. (제 8조 2항 일부 개정)<br><br>부칙&lt;제 3호, 2014.11.26&gt;<br>본 약관은 2014년 12월 9일부터 시행한다.<br><br>부칙&lt;제 4호, 2017.9.21&gt;<br>본 약관은 2017년 10월 12일부터 시행한다.<br><br>부칙&lt;제 5호, 2022.9.19&gt;<br>본 약관은 2022년 09월 19일부터 시행한다.<br><br>부칙&lt;제 6호, 2023.04.01&gt;<br>본 약관은 2023년 04월 01일부터 시행한다.<br><br>부칙&lt;제 7호, 2024.9.15&gt;<br>본 약관은 2024년 09월 15일부터 시행한다.',
-                'privacy_collect': 'CJ올리브네트웍스㈜(이하 \'회사\')는 이용자의 개인정보를 중요시하며, 『전자금융거래법』, 『개인정보보호법』, 『정보통신망 이용촉진 및 정보보호 등에 관한 법률』, 『전자상거래 등에서의 소비자보호에 관한 법률』, 『특정금융거래정보의 보고 및 이용 등에 관한 법률』 등을 준수하며 관련 법령에 의거한 개인정보처리방침을 정하여 이용자 권익을 보호하고 있습니다.<br><br>1. 회사는 전자금융거래서비스를 제공함에 있어서 취득한 정보를 이용자의 동의를 얻지 않고 제3자에게 제공, 누설하거나 업무상 목적 외에 사용하지 않습니다. 다만, 업무상 이용자 정보를 제3자에게 위탁할 경우 홈페이지(www.cjolivenetworks.co.kr)을 통해 이용자에게 고지합니다.<br><br>2. 수집하는 개인정보 항목<br><br>회사는 전자금융업자로서 고객 확인 및 검증, 결제내역 조회, 고객상담, 서비스 신청 등을 위해 아래와 같은 개인정보를 수집하고 있습니다.<br><br>[필수항목]<br><br>신원 확인 및 고객 검증을 위한 수집 정보<br><br>· 개인 및 개인사업자 : 고객ID, 이용자의 이름, 생년월일, 성별, 실명번호, 주소, 연락처<br>· 영리법인의 경우 : 실지명의, 업종, 본점 및 사업장의 소재지, 연락처, 대표자의 성명, 생년월일 및 국적<br>· 비영리법인 그 밖의 단체의 경우 : 실지명의, 설립목적, 주된 사무소의 소재지, 연락처, 대표자의 성명, 생년월일 및 국적<br>· 외국인 및 외국단체의 경우 : 제1호 내지 제3호의 규정에 의한 분류에 따른 각 해당 사항, 국적, 국내의 거소 또는 사무소의 소재지<br><br>고위험 거래 대상으로 분류 시 개인정보 추가 수집 내역<br><br>· 개인 : 직업 또는 업종(개인사업자), 거래의 목적, 거래자금의 원천, 기타 자금세탁 우려를 해소하기 위해 필요하다고 판단한 사항으로 회사가 별도 고지한 정보유형<br>· 법인 : 회사에 관한 기본정보(법인정보, 상장정보, 사업체 설립일, 홈페이지/이메일 등) 거래자금의 원천, 거래의 목적, 기타 자금세탁 우려를 해소하기 위해 필요하다고 판단한 사항으로 회사가 별도 고지한 정보유형<br><br>결제내역 조회, 고객상담, 서비스 신청 등을 위한 수집 정보<br><br>· 신용카드 : 카드번호, 유효기간 (결제방식에 따라 수집정보가 상이할 수 있습니다.)<br>· 휴대전화 : 통신사명, 휴대전화번호<br>· 계좌이체 : 은행명, 계좌번호<br>· 가상계좌 : 은행명, 입금자명 (환불시, 추가로 은행명, 계좌번호, 예금주 정보를 수집합니다.)<br>· ARS폰빌 : 유선전화번호<br>· 문화상품권 : 컬처랜드 아이디<br>· 도서문화상품권 : 북앤라이프 아이디<br>· 현금영수증 : 고유식별정보 또는 휴대폰번호 또는 카드번호<br>· 슈가페이 : 이용자ID, CI, 카드번호<br>· 폰페이 : CI, 휴대전화번호<br><br>※ 서비스 이용과정중에서 아래와 같은 정보들이 자동으로 생성되어 수집됩니다.<br>(IP Address, 서비스접속일시)<br><br>3. 개인정보 수집방법<br><br>· 회사의 결제서비스 이용 시<br>· 결제내역 조회 및 고객 응대 입력 시<br><br>4. 개인정보의 수집 및 이용목적<br><br>회사가 이용자의 개인정보를 수집, 이용하는 목적은 아래와 같습니다.<br><br>1) 이용자가 구매한 재화나 용역의 대금 결제<br>2) 이용자가 결제한 거래의 취소 또는 환불<br>3) 이용자가 결제한 거래의 청구 및 수납<br>4) 이용자가 수납한 거래 대금의 정산<br>5) 이용자가 결제한 거래의 내역을 요청하는 경우 응대 및 확인<br>6) 통신과금서비스 이용이 불가능한 이용자와 불량, 불법 이용자의 부정 이용 방지<br>7) 특정금융거래정보의 보고 및 이용 등에 관한 법률 제5조의2 및 동법 시행령 제10조의4에 따른 고객확인의무 이행 및 의심거래 보고<br><br>5. 개인정보의 보유 및 이용기간<br><br>회사가 이용자의 개인정보를 수집, 이용하는 목적은 아래와 같습니다. 회사는 개인정보 수집 및 이용목적이 달성된 후에는 예외 및 지체 없이 해당 정보를 파기합니다. 단, 『개인정보보호법』 및 『정보통신망 이용촉진 및 정보보호 등에 관한 법률』 등 관계법령의 규정에 의하여 보존할 필요가 있는 경우 아래와 같이 법령에서 정한 일정한 기간 동안 보관합니다. 수집 및 이용 동의에 대한 거부 시 서비스 이용에 제한이 있을 수 있습니다.<br><br>· 계약 또는 청약철회 등에 관한 기록<br>보존 이유 : 전자상거래 등에서의 소비자보호에 관한 법률<br>보존 기간 : 5년<br><br>· 대금결제 및 재화 등의 공급에 관한 기록<br>보존 이유 : 전자상거래 등에서의 소비자보호에 관한 법률<br>보존 기간 : 5년<br><br>· 전자금융 거래에 관한 기록<br>보존 이유 : 전자금융거래법<br>보존 기간 : 5년<br><br>· 소비자의 불만 또는 분쟁처리에 관한 기록<br>보존 이유 : 전자상거래 등에서의 소비자보호에 관한 법률<br>보존 기간 : 3년<br><br>· 웹사이트 방문기록<br>보존 이유 : 통신비밀보호법<br>보존 기간 : 3개월<br><br>· 신원 확인 및 고객 검증 등을 위한 기록<br>보존 이유 : 특정금융거래정보의 보고 및 이용 등에 관한 법률 및 동법 시행령<br>보존 기간 : 5년<br><br>6. 개인정보의 파기절차 및 방법<br><br>회사는 원칙적으로 개인정보 수집 및 이용목적이 달성된 후에는 해당 정보를 지체없이 파기합니다. 파기절차 및 방법은 다음과 같습니다.<br><br>· 파기절차<br>회원님이 회원가입 등을 위해 입력하신 정보는 목적이 달성된 후 별도의 데이터베이스(DB)로 옮겨져(종이의 경우 별도의 서류함) 내부 방침 및 기타 관련 법령에 의한 정보보호 사유에 따라(5. 보유 및 이용기간 참조) 일정 기간 저장된 후 파기됩니다.<br>별도 DB로 옮겨진 개인정보는 법률에 의한 경우가 아니고서는 보유되는 이외의 다른 목적으로 이용되지 않습니다.<br><br>· 파기방법<br>전자적 파일형태로 저장된 개인정보는 기록을 재생할 수 없는 기술적 방법을 사용하여 삭제합니다.',
-                'privacy_provide': '1. CJ올리브네트웍스㈜(이하 \'회사\')는 이용자의 개인정보를 본 개인정보처리방침에서 고지한 범위 내에서 사용하며, 이용자의 사전 동의 없이 동 범위를 초과하여 이용하거나 이용자의 개인 정보를 제3자에게 제공하지 않습니다. 다만, 아래의 경우에는 예외로 합니다.<br><br>· 이용자가 사전에 동의한 경우<br>· 법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우<br><br>2. 회사의 서비스 이행을 위하여 개인정보를 제3자에게 제공하고 있는 경우는 다음과 같습니다. 보유 및 이용기간 관련하여 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다. (단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관합니다.)제3자 제공 동의에 대한 거부 시 서비스 이용에 제한이 있을 수 있습니다.<br><br>1) 제공 목적 : 신용카드 결제<br><br>- 제공 받는 자<br>· 카드사: 국민, 비씨, 롯데, 삼성, NH농협, 현대, KEB하나, 신한<br>· 은행: 신한, SC제일, 씨티, KEB하나, 농협, 기업, 국민, 대구, 부산, 경남, 우리<br>· 부가통신사업자(VAN사): 한국정보통신(KICC), KIS정보통신, NICE정보통신, (주)스마트로, 한국신용카드결제(주), VP(주)<br>· 전자지급결제대행업자:KG이니시스, (주)NHN한국사이버결제<br><br>- 제공 정보<br>· 결제정보 (카드번호,고객명, 생년월일,전화번호 등) (비씨카드: IP포함)<br><br>- 보유 및 이용기간<br>· 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다<br>(단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관)<br><br>2) 제공 목적 : 슈가페이 (CJ올리브네트웍스의 자체 간편결제 서비스)<br><br>- 제공받는 자<br>· 신용카드 등록 및 결제서비스: NICE정보통신<br>· 계좌 등록 및 계좌이체 결제서비스: ㈜헥토파이낸셜<br><br>- 제공 정보<br>· 신용카드 등록 및 결제서비스: 카드사명, 결제정보(카드번호, 카드비밀번호 앞2자리, 카드유효기간, CVC(카드사별 상이), CI, 휴대전화번호, 생년월일, 성별, 내/외국인여부, 상품명, 이용자ID 등)<br>· 계좌 등록 및 계좌이체 결제서비스: 금융기관명, 계좌번호, 계좌주, 생년월일, 휴대폰전화번호, CI, 이용자ID 등<br><br>3) 제공 목적 : 간편결제<br><br>- 제공 받는 자<br>· 카카오페이: ㈜카카오페이<br>· 페이코: NHN페이코㈜<br>· 페이나우: 토스페이먼츠<br>· 스마일페이: LG CNS, ㈜이베이코리아<br>· 네이버페이: 네이버파이낸셜㈜<br>· 슈가페이: NICE정보통신<br>· 토스: ㈜비바리퍼블리카<br>· 내통장: 세틀뱅크㈜<br>· 차이: ㈜차이코퍼레이션<br>· 페이코인: ㈜다날<br>· SSGPAY: SSG.COM<br>· 폰페이: 비씨카드<br><br>- 제공 정보<br>· 결제정보(전화번호, 상품명 등) (슈가페이: CI, 이용자ID/폰페이: CI,휴대전화번호 포함)<br><br>- 보유 및 이용기간<br>· 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다<br>(단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관)<br><br>4) 제공 목적 : 계좌이체 결제<br><br>- 제공받는 자<br>· 은행: 기업, 국민, KEB하나, 수협, 농협, 우리, SC제일, 씨티, 대구, 부산, 광주, 제주, 전북, 경남, 새마을금고, 신협, 우체국, 신한, 산림조합, 산업<br>· 증권: 유안타, 현대, 미래에셋, 한투, 우리투자, 하이투자, HMC투자, SK, 대신, 하나대투, 신한금융, 동부, 유진투자, 메리츠, 신영, 삼성, 한화, 대우<br>· 금융결제원, 토스페이먼츠<br>· CMS 계좌이체: 효성에프엠에스<br><br>- 제공 정보<br>· 결제정보(계좌번호, 고객명,생년월일 등)<br><br>- 보유 및 이용기간<br>· 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다<br>(단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관)<br><br>5) 제공 목적 : 가상계좌 결제<br><br>- 제공받는 자<br>· 은행: 기업, 국민, KEB하나, 수협, 농협, 우리, SC제일, 신한, 부산, 광주, 우체국<br>· 토스페이먼츠, 세틀뱅크<br><br>- 제공 정보<br>· 결제정보(가상 계좌번호 등)<br><br>- 보유 및 이용기간<br>· 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다<br>(단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관)<br><br>6) 제공 목적 : 휴대폰 결제<br><br>- 제공받는 자<br>· 이동통신사: (주)SKT, ㈜KT, ㈜LGU+, MVNO사업자<br>· ㈜모빌리언스, 갤럭시아머니트리㈜, ㈜다날, (주)NHN한국사이버결제<br><br>- 제공 정보<br>· 결제정보(휴대폰 번호, 생년월일, 성별 등)<br><br>- 보유 및 이용기간<br>· 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다<br>(단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관)<br><br>7) 제공 목적 : ARS폰빌 결제<br><br>- 제공받는 자<br>· ㈜KT, ㈜모빌리언스<br><br>- 제공 정보<br>· 결제정보(유선전화번호, 고객명 등)<br><br>- 보유 및 이용기간<br>· 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다<br>(단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관)<br><br>8) 제공 목적 : 포인트 결제<br><br>- 제공받는 자<br>· OK캐쉬백: SK마케팅앤컴퍼니㈜<br>· 에코마일리지: BC카드, 서울시<br><br>- 제공 정보<br>· 결제정보(포인트 카드번호, 카드비밀번호, 고객명 등)<br><br>- 보유 및 이용기간<br>· 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다<br>(단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관)<br><br>9) 제공 목적 : 상품권 결제<br><br>- 제공받는 자<br>· 해피머니상품권: 해피머니아이엔씨<br>· 도서문화상품권: 북앤라이프<br>· 문화상품권: 컬쳐랜드<br><br>- 제공 정보<br>· 결제정보(구매자 ID, 비밀번호, 상품권번호 등) (컬쳐랜드, 해피머니아이엔씨 : IP포함)<br><br>- 보유 및 이용기간<br>· 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다<br>(단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관)<br><br>10) 제공 목적 : 현금영수증 발행<br><br>- 제공받는 자<br>· 국세청<br><br>- 제공 정보<br>· 고유식별정보, 휴대폰번호, 카드번호, 고객명 등<br><br>- 보유 및 이용기간<br>· 개인정보는 원칙적으로 개인 정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다<br>(단, 다른 법령에 특별한 규정이 있을 경우 관련 법령에 따라 보관)'
-            };
-            
-            const transTermsData = {
-                'en': {
-                    'finance': 'Article 1 (Purpose)<br><br>The purpose of these Terms and Conditions is to stipulate the basic matters concerning electronic financial transactions between the user and CJ OliveNetworks Co., Ltd. (hereinafter referred to as the \'Company\') when the user uses the electronic payment gateway service and the issuance and management service of prepaid electronic payment methods provided by the Company.<br><br>Article 2 (Definition of Terms)<br><br>The definitions of terms used in these Terms and Conditions are as follows.<br><br>1. \'Electronic Financial Transaction\' refers to a transaction in which the Company provides electronic payment gateway services and issuance and management services of prepaid electronic payment methods (hereinafter referred to as \'Electronic Financial Transaction Services\') through electronic devices, and the user uses them in an automated manner without directly facing or communicating with the Company\'s employees.<br><br>2. \'Electronic Payment Method\' refers to prepaid electronic payment methods, credit cards, and other payment methods according to electronic methods specified in Article 2, Item 11 of the Electronic Financial Transactions Act.<br><br>3. \'Electronic Payment Gateway Service\' refers to the service of transmitting or receiving payment information or acting as an agent or mediator for the settlement of the consideration in the purchase of goods or the use of services by electronic methods.<br><br>4. \'Prepaid Electronic Payment Method\' refers to a prepaid electronic payment method under the Electronic Financial Transactions Act that the Company announced to members in advance at the time of issuance, such as a service that can purchase goods or services (hereinafter referred to as \'Goods, etc.\') on the website operated by the Company and partner services.<br><br>5. \'Charge\' refers to purchasing a prepaid electronic payment method through a payment method designated by the Company to secure a certain amount of the prepaid electronic payment method, or receiving a prepaid electronic payment method through activities in the service of the Company or a third party designated by the Company (hereinafter referred to as \'Service, etc.\').<br><br>6. \'User\' refers to a person who agrees to these Terms and Conditions and uses the Electronic Financial Transaction Services provided by the Company.<br><br>7. \'Access Media\' refers to means or information used to direct a transaction in electronic financial transactions or to secure the authenticity and accuracy of users and transaction details, such as electronic cards and equivalent electronic information (including credit card numbers), certificates under the \'Digital Signature Act\', user numbers registered with the Company, biometric information of users, passwords necessary to use the above means or information, etc., as defined in Article 2, Item 10 of the Electronic Financial Transactions Act.<br><br>8. \'Transaction Instruction\' refers to the user instructing the Company to process an electronic financial transaction in accordance with the electronic financial transaction agreement concluded under these Terms and Conditions.<br><br>9. \'Error\' refers to a case where an electronic financial transaction is not executed in accordance with the electronic financial transaction agreement or the user\'s transaction instruction without the intention or negligence of the user.<br><br>10. \'Electronic Payment Transaction\' refers to an electronic financial transaction in which a person giving funds (hereinafter referred to as the \'Payer\') causes the Company to move funds to a person receiving funds (hereinafter referred to as the \'Payee\') using an electronic payment method.<br><br>11. \'Electronic Device\' refers to a device used to transmit or process electronic financial transaction information by electronic means, such as an automated teller machine, automated deposit/withdrawal machine, payment terminal, computer, telephone, and other devices that transmit or process information by electronic means.<br><br>Article 3 (Specification and Modification of Terms)<br><br>1. When the Company changes these Terms and Conditions, it shall post the contents on the electronic device that performs the electronic financial transaction (if it is difficult to post on the electronic device, an electronic device that is easy for the user to access) 1 month before the effective date of the changed Terms and Conditions and notify the user. However, if the user raises an objection, the Company must confirm that the details of the change in the Terms and Conditions have been notified to the user in an appropriate manner.<br><br>2. Notwithstanding Paragraph 1, if the Terms and Conditions are urgently changed due to an amendment to the laws, the changed Terms and Conditions must be posted on the electronic device for at least 1 month and notified to the user.<br><br>3. When the Company posts or notifies the changed Terms and Conditions in accordance with Paragraphs 1 and 2, it shall notify the user that "The user may terminate the contract within the period from after the details of the change in the Terms and Conditions are posted or notified to the business day before the effective date of the changed Terms and Conditions, and if no objection is raised to the details of the change in the Terms and Conditions, it is considered that the details of the change in the Terms and Conditions have been approved."<br><br>4. The user may terminate the electronic financial transaction contract within the period from after the details of the change in the Terms and Conditions are posted or notified to the business day before the effective date of the changed Terms and Conditions, and if no objection is raised to the details of the change in the Terms and Conditions, it is considered that the change in the Terms and Conditions has been approved.<br><br>Article 4 (Types of Electronic Payment Gateway Services)<br><br>The electronic payment gateway services provided by the Company are classified as follows depending on the payment method.<br><br>1. Credit Card Payment Gateway Service: When the payment method provided by the user for the payment of the settlement amount is a credit card, it refers to the service where the Company transmits and receives credit card payment information through the electronic payment system and acts as an agent or mediator for the settlement of the payment amount.<br><br>2. Account Transfer Gateway Service: This refers to a real-time remittance service where the user can withdraw the payment amount from their own account registered with a financial institution through the Company\'s electronic payment system and transfer it to the desired account.<br><br>3. Virtual Account Service: When the user wants to pay the payment amount in cash, it refers to a service where the payment of the payment amount is made through the automatic issuance of an inherent one-time account only for the user through the Company\'s electronic payment system.<br><br>4. Simple Payment Service: When the payment method provided by the user for the payment of the settlement amount is a credit card or account transfer, it refers to a service that allows payment for products with a single registration of relevant information without the need to enter information every time. However, when applying for a simple payment service, the user\'s identity verification process determined by the Company is mandatory, and the service can be used only with the Company\'s authentication and approval.<br><br>5. Others: Services provided by the Company include \'Mobile Phone Payment Gateway Service\', \'ARS Payment Gateway Service\', \'Gift Certificate Payment Gateway Service\', etc., depending on the type of payment method.<br><br>Article 5 (Charge and Use of Prepaid Electronic Payment Methods)<br><br>1. The user may purchase prepaid electronic payment methods through account withdrawal or other payment methods specified by the Company, or charge prepaid electronic payment methods by accumulating them from the Company or its partners through activities in the Service, etc.<br><br>2. Purchases of prepaid electronic payment methods through payment methods designated by the Company can be charged with the amount designated for each payment method specified in Paragraph 1, and there may be its own limit depending on the payment method.<br><br>3. The user may use the prepaid electronic payment method according to the deadline and usage method set by the Company, and the Company will announce the specific details through these Terms and Conditions or the service page related to the prepaid electronic payment method.<br><br>4. The user may use the prepaid electronic payment method as a payment method when purchasing Goods, etc. in the Service, etc.<br><br>5. The prepaid electronic payment method will be deducted immediately upon completion of the purchase of Goods, etc.<br><br>6. In principle, if the user cancels the purchase of Goods, etc. using the prepaid electronic payment method, the Company will recharge the prepaid electronic payment method used at the time of purchase.<br><br>Article 6 (Refund of Prepaid Electronic Payment Methods)<br><br>1. The user may receive a full refund of the purchased prepaid amount if requested to the Company for the prepaid electronic payment method held.<br><br>2. In cases corresponding to any of the following items, the entire balance of the purchased prepaid amount will be refunded.<br><br>① When it becomes difficult to provide goods or services in the Service, etc. due to reasons such as natural disasters, making it impossible to use the prepaid electronic payment method<br>② When goods or services cannot be provided in the Service, etc. due to a defect in the prepaid electronic payment method<br>③ When the balance recorded on the prepaid electronic payment method is less than 30% of the charged amount<br>④ When the Company reduces the affiliated stores where the prepaid electronic payment method can be used to the disadvantage of the member or changes the terms of use of the prepaid electronic payment method.<br><br>However, the following cases are excluded.<br><br>A. When the affiliated store closes<br>B. When the franchise agreement period expires<br>C. When it is possible to purchase goods or services of a similar level at other affiliated stores<br>D. When the franchise agreement is terminated according to the Electronic Financial Transactions Act<br>E. When the franchise agreement is terminated due to concerns about hindering member protection and sound transaction order by violating the Electronic Financial Transactions Act or other laws<br>F. In other cases where there is a justifiable reason prescribed by law<br><br>3. The member may use the prepaid electronic payment method according to the deadline and usage method set by the Company, and the Company will guide specific details such as refunds through the customer center page of the individual prepaid electronic payment method.<br><br>Article 7 (Hours of Use)<br><br>1. In principle, the Company provides electronic financial transaction services to users 24 hours a day, 365 days a year. However, it may be set differently depending on the circumstances of financial institutions and other payment method issuers.<br><br>2. In the event that service suspension is inevitable due to maintenance, inspection of information and communication facilities, other technical needs, or the circumstances of financial institutions or other payment method issuers, the Company may temporarily suspend the service after posting the fact of service suspension through available electronic means up to 3 days before the service suspension.<br>However, in inevitable cases such as system failure recovery, urgent program maintenance, external factors, etc., the service may be suspended without prior notice.<br><br>Article 8 (Selection, Use, and Management of Access Media)<br><br>1. When providing electronic financial transaction services, the Company may select access media to confirm the user\'s identity, authority, and the contents of transaction instructions.<br><br>2. The user shall not lend, entrust the use of, transfer, or provide the access media to a third party for collateral purposes.<br><br>3. The user shall not leak, expose, or neglect their access media to a third party, and must take sufficient care to prevent theft, forgery, or alteration of the access media.<br><br>4. When the Company receives a notice of loss or theft of the access media from the user, it is responsible for compensating for damages incurred by the user due to a third party\'s use of the access media from that time onwards.<br><br>Article 9 (Confirmation of Transaction Details)<br><br>1. The Company allows the user to check their transaction details (including matters concerning the user\'s \'request for error correction and processing results\') through electronic methods agreed upon in advance with the user, and if requested by the user, provides a written document concerning the transaction details by methods such as facsimile transmission within 2 weeks from the date of receiving the request.<br><br>2. Among the transaction details provided by the Company to the user, information identifying the name or number of the transaction account, type and amount of transaction, counterparty of the transaction, transaction date, type of electronic device and information identifying the electronic device, fees received by the Company in consideration for electronic financial transactions, matters concerning the user\'s consent to withdrawal, matters concerning the application for and change of conditions of electronic financial transactions, and access records of electronic devices related to the electronic financial transaction shall be kept for 5 years, and records concerning small electronic financial transactions with a transaction amount of KRW 10,000 or less per case, records concerning transaction approval when using electronic payment methods, and matters concerning the user\'s request for error correction and processing results shall be kept for 1 year.<br><br>3. If the user wishes to request the written delivery specified in Paragraph 1, they can request it at the following address and phone number.<br><br>Address: 10th Floor, Twin City, 366 Hangang-daero (Dongja-dong), Yongsan-gu, Seoul<br>Phone: 1577-8888 (Extension 3 \'Payment Inquiry\')<br>Fax: 02-6252-0098<br>Email: onepg@cj.net<br><br>Article 10 (Correction of Errors, etc.)<br><br>1. If the user becomes aware that there is an error in using the electronic financial transaction service, they may request the Company to correct it.<br><br>2. When the Company receives a request for error correction under the preceding paragraph or realizes that there is an error itself, it immediately investigates and processes it, and informs the user of the result within 2 weeks from the date of receiving the correction request.<br><br>Article 11 (Company\'s Responsibility)<br><br>1. The Company is responsible for compensating for damages incurred by the user due to an accident caused by forgery or alteration of the access media.<br>However, if the user violates Article 6, Paragraph 2, or if the user knew or could have known that a third party could conduct an electronic financial transaction using the user\'s access media without authority, but the user leaked, exposed, or neglected their access media, all or part of the responsibility may be borne by the user.<br><br>2. The Company is responsible for compensating for damages incurred by the user due to an accident that occurred during the electronic transmission or processing of a contract conclusion or transaction instruction.<br>However, in cases falling under the proviso of Paragraph 1 of this Article or when damages occur to a user who is a corporation (excluding small enterprises under Article 2, Paragraph 2 of the \'Framework Act on Small and Medium Enterprises\'), and the Company has fulfilled its sufficient duty of care reasonably required, such as establishing security procedures to prevent accidents and strictly complying with them, all or part of the responsibility may be borne by the user.<br><br>3. The Company is responsible for compensating for damages incurred by the user due to an accident caused by the use of an access media acquired by intrusion into an electronic device for electronic financial transactions or an information and communications network under Article 2, Paragraph 1, Item 1 of the \'Act on Promotion of Information and Communications Network Utilization and Information Protection, etc.\' by deceit or other unjust means.<br><br>Article 12 (Effect of Electronic Payment Transaction Contract)<br><br>1. If the user\'s transaction instruction concerns an electronic payment transaction, the Company shall execute the payment procedure on their behalf and transmit the details of the transaction instruction concerning the electronic payment transaction so that the payment is made.<br><br>2. If a payment transaction is not made according to the user\'s transaction instruction regarding an electronic payment transaction, the Company must return the received funds to the user.<br><br>Article 13 (Withdrawal of Transaction Instruction)<br><br>1. In the case of a transaction instruction regarding an electronic payment transaction, the user may withdraw the transaction instruction until the payment takes effect.<br><br>2. The point at which the payment takes effect in the preceding paragraph refers to (i) in the case of electronic funds transfer, when the deposit record is completed in the account ledger of the financial institution where the payee\'s account is opened regarding the information of the instructed amount, (ii) in the case of payment by other electronic payment methods, when the input of the information of the instructed amount into the electronic device of the financial institution where the payee\'s account is opened is completed.<br><br>3. Once the payment takes effect, the user may receive a refund of the payment amount in accordance with the method of withdrawal of subscription under related laws, such as the Act on the Consumer Protection in Electronic Commerce, etc.<br><br>Article 14 (Generation and Preservation of Records of Use of Electronic Payment Gateway Services)<br><br>1. The Company shall generate and preserve records that allow the user to track and search the contents of electronic financial transactions or confirm or correct errors if they occur.<br><br>2. The types and preservation methods of records that the Company must preserve according to the provisions of the preceding paragraph shall be as specified in Article 7, Paragraph 2.<br><br>Article 15 (Prohibition of Provision of Electronic Financial Transaction Information)<br><br>1. In providing electronic financial transaction services, the Company shall not provide or leak to a third party or use for purposes other than business purposes the user\'s personal information, user\'s account, access media, and information or data concerning the contents and performance of electronic financial transactions acquired without the user\'s consent.<br><br>Article 16 (Dispute Resolution and Dispute Mediation)<br><br>1. The user may request dispute resolution, such as raising opinions and complaints related to the use of electronic financial transaction services and claiming compensation for damages, from the following dispute resolution officer and person in charge.<br><br>Person in charge: Head of Billing Service Department<br>Phone: 1577-8888 (Extension 3 \'Payment Inquiry\')<br>Fax: 02-6252-0098<br>Email: onepg@cj.net<br><br>2. If the user applies for dispute resolution to the Company, the Company shall inform the user of the results of the investigation or processing within 15 days.<br><br>3. If the user has an objection to the Company\'s dispute resolution results under Paragraph 2, they may apply for dispute mediation related to the use of the Company\'s electronic financial transaction service through the Financial Dispute Mediation Committee of the Financial Supervisory Service, the Consumer Dispute Mediation Commission of the Korea Consumer Agency, etc.<br><br>Article 17 (Company\'s Duty to Ensure Stability)<br><br>1. The Company complies with the standards set by the Financial Services Commission regarding the information technology sector, such as personnel, facilities, and electronic devices for electronic transmission or processing by type of electronic financial transaction, and electronic financial business to secure the stability and reliability of electronic financial transactions.<br><br>Article 18 (Rules and Jurisdiction Other than Terms and Conditions)<br><br>1. Matters not specified in these Terms and Conditions shall be governed by consumer protection laws such as the Electronic Financial Transactions Act, the Act on the Consumer Protection in Electronic Commerce, etc., the Door-to-Door Sales, etc. Act, and the Specialized Credit Finance Business Act.<br><br>2. The jurisdiction over disputes arising between the Company and the user shall be governed by the Civil Procedure Act.<br><br>Addendum &lt;No. 1, Dec. 26, 2006&gt;<br>These Terms and Conditions shall enter into force on January 1, 2007.<br><br>Addendum &lt;No. 2, May 2, 2011&gt;<br>These Terms and Conditions shall enter into force on June 20, 2011. (Partial amendment of Article 8, Paragraph 2)<br><br>Addendum &lt;No. 3, Nov. 26, 2014&gt;<br>These Terms and Conditions shall enter into force on December 9, 2014.<br><br>Addendum &lt;No. 4, Sep. 21, 2017&gt;<br>These Terms and Conditions shall enter into force on October 12, 2017.<br><br>Addendum &lt;No. 5, Sep. 19, 2022&gt;<br>These Terms and Conditions shall enter into force on September 19, 2022.<br><br>Addendum &lt;No. 6, Apr. 1, 2023&gt;<br>These Terms and Conditions shall enter into force on April 1, 2023.<br><br>Addendum &lt;No. 7, Sep. 15, 2024&gt;<br>These Terms and Conditions shall enter into force on September 15, 2024.',
-                    'privacy_collect': 'CJ OliveNetworks Co., Ltd. (hereinafter the \'Company\') values the personal information of users, complies with the 『Electronic Financial Transactions Act』, 『Personal Information Protection Act』, 『Act on Promotion of Information and Communications Network Utilization and Information Protection, etc.』, 『Act on the Consumer Protection in Electronic Commerce, etc.』, and 『Act on Reporting and Using Specified Financial Transaction Information』, and establishes a personal information processing policy based on related laws to protect users\' rights and interests.<br><br>1. The Company does not provide, leak, or use for purposes other than business purposes the information acquired in providing electronic financial transaction services to third parties without obtaining the user\'s consent. However, if user information is entrusted to a third party for business purposes, the user is notified through the website (www.cjolivenetworks.co.kr).<br><br>2. Items of Personal Information Collected<br><br>As an electronic financial business operator, the Company collects the following personal information for customer identification and verification, inquiry of payment details, customer consultation, and service application.<br><br>[Required Items]<br><br>Information collected for identity verification and customer verification<br>· Individual and individual business operator: Customer ID, user\'s name, date of birth, gender, real name number, address, contact information<br>· For-profit corporation: Real name, industry, location of head office and workplace, contact information, representative\'s name, date of birth and nationality<br>· Non-profit corporation and other organizations: Real name, purpose of establishment, location of main office, contact information, representative\'s name, date of birth and nationality<br>· Foreigner and foreign organization: Each corresponding item according to the classification under items 1 to 3, nationality, location of residence or office in Korea<br><br>Additional personal information collected when classified as a high-risk transaction target<br>· Individual: Occupation or industry (individual business operator), purpose of transaction, source of transaction funds, and other information types separately notified by the Company as deemed necessary to resolve money laundering concerns<br>· Corporation: Basic information about the company (corporate information, listing information, date of establishment of the business, website/e-mail, etc.), source of transaction funds, purpose of transaction, and other information types separately notified by the Company as deemed necessary to resolve money laundering concerns<br><br>Information collected for inquiry of payment details, customer consultation, service application, etc.<br>· Credit card: Card number, expiration date (collected information may vary depending on the payment method.)<br>· Mobile phone: Telecom company name, mobile phone number<br>· Account transfer: Bank name, account number<br>· Virtual account: Bank name, depositor name (for refunds, bank name, account number, and account holder information are additionally collected.)<br>· ARS phone bill: Landline phone number<br>· Culture Gift Certificate: Cultureland ID<br>· Book Culture Gift Certificate: Book & Life ID<br>· Cash receipt: Unique identification information or mobile phone number or card number<br>· Sugar Pay: User ID, CI, card number<br>· Phone Pay: CI, mobile phone number<br><br>※ During the use of the service, the following information is automatically generated and collected.<br>(IP Address, service connection date and time)<br><br>3. Method of Collecting Personal Information<br>· When using the Company\'s payment service<br>· When entering payment history inquiry and customer response<br><br>4. Purpose of Collection and Use of Personal Information<br>The purposes for which the Company collects and uses the personal information of users are as follows.<br>1) Payment of goods or services purchased by the user<br>2) Cancellation or refund of transactions paid by the user<br>3) Billing and collection of transactions paid by the user<br>4) Settlement of transaction amounts received by the user<br>5) Response and confirmation when the user requests the details of a paid transaction<br>6) Prevention of illegal use by users who cannot use the telecommunications billing service and defective/illegal users<br>7) Fulfillment of customer verification obligations and reporting of suspicious transactions in accordance with Article 5-2 of the Act on Reporting and Using Specified Financial Transaction Information and Article 10-4 of its Enforcement Decree<br><br>5. Retention and Use Period of Personal Information<br>The Company\'s purpose for collecting and using the user\'s personal information is as follows. In principle, after the purpose of collecting and using personal information is achieved, the information is destroyed without delay and exception. However, if it is necessary to preserve it according to the provisions of related laws such as the 『Personal Information Protection Act』 and the 『Act on Promotion of Information and Communications Network Utilization and Information Protection, etc.』, it is kept for a certain period stipulated by law as follows. If you refuse to consent to the collection and use, there may be restrictions on the use of the service.<br><br>· Records on contract or withdrawal of subscription, etc.<br>Reason for preservation: Act on the Consumer Protection in Electronic Commerce, etc.<br>Preservation period: 5 years<br><br>· Records on payment and supply of goods, etc.<br>Reason for preservation: Act on the Consumer Protection in Electronic Commerce, etc.<br>Preservation period: 5 years<br><br>· Records on electronic financial transactions<br>Reason for preservation: Electronic Financial Transactions Act<br>Preservation period: 5 years<br><br>· Records on consumer complaints or dispute handling<br>Reason for preservation: Act on the Consumer Protection in Electronic Commerce, etc.<br>Preservation period: 3 years<br><br>· Website visit records<br>Reason for preservation: Protection of Communications Secrets Act<br>Preservation period: 3 months<br><br>· Records for identity verification and customer verification, etc.<br>Reason for preservation: Act on Reporting and Using Specified Financial Transaction Information and its Enforcement Decree<br>Preservation period: 5 years<br><br>6. Procedure and Method for Destroying Personal Information<br>In principle, the Company destroys personal information without delay after the purpose of collecting and using it has been achieved. The destruction procedure and method are as follows.<br><br>· Destruction procedure<br>Information entered by members for membership registration, etc. is transferred to a separate database (DB) after the purpose has been achieved (a separate filing cabinet in the case of paper) and stored for a certain period according to internal policies and other information protection reasons under relevant laws (refer to 5. Retention and Use Period) before being destroyed.<br>Personal information transferred to a separate DB is not used for any other purpose than that for which it is held unless required by law.<br><br>· Destruction method<br>Personal information stored in electronic file format is deleted using a technical method that cannot reproduce the records.',
-                    'privacy_provide': '1. CJ OliveNetworks Co., Ltd. (hereinafter \'Company\') uses user\'s personal information within the scope notified in this Privacy Policy, and does not use it beyond that scope or provide it to third parties without prior consent. However, the following cases are exceptions.<br><br>· When the user has consented in advance<br>· When there is a request from an investigative agency according to the provisions of laws and regulations or for investigative purposes according to procedures and methods prescribed by law<br><br>2. The cases where personal information is provided to a third party to perform the Company\'s services are as follows. Regarding the retention and use period, personal information is, in principle, destroyed without delay when the purpose of collection and use is achieved. (However, if there are special provisions in other laws, it will be stored in accordance with relevant laws.) If you refuse to consent to the provision to a third party, there may be restrictions on using the service.<br><br>1) Purpose of Provision: Credit card payment<br><br>- Recipient<br>· Card companies: Kookmin, BC, Lotte, Samsung, NH Nonghyup, Hyundai, KEB Hana, Shinhan<br>· Banks: Shinhan, SC First, Citi, KEB Hana, Nonghyup, IBK, Kookmin, Daegu, Busan, Kyongnam, Woori<br>· Value Added Network (VAN): KICC, KIS, NICE, Smartro, KCP, VP<br>· PG (Payment Gateway): KG Inicis, NHN KCP<br><br>- Provided Information<br>· Payment information (Card number, name, date of birth, phone number, etc.) (BC Card: including IP)<br><br>- Retention and Use Period<br>· Personal information is destroyed without delay when the purpose of collection and use is achieved<br>(However, stored in accordance with relevant laws if there are special provisions)<br><br>2) Purpose of Provision: Sugar Pay (CJ OliveNetworks\' simple payment service)<br><br>- Recipient<br>· Credit card registration and payment service: NICE<br>· Account registration and account transfer payment service: Hecto Financial<br><br>- Provided Information<br>· Credit card registration and payment service: Card company name, payment information (card number, first 2 digits of password, expiration date, CVC, CI, mobile number, DOB, gender, nationality, product name, user ID, etc.)<br>· Account registration and account transfer payment service: Financial institution name, account number, account holder, DOB, mobile number, CI, user ID, etc.<br><br>3) Purpose of Provision: Simple payment<br><br>- Recipient<br>· Kakao Pay: Kakao Pay Corp.<br>· Payco: NHN Payco<br>· Paynow: Toss Payments<br>· SmilePay: LG CNS, eBay Korea<br>· Naver Pay: Naver Financial<br>· Sugar Pay: NICE<br>· Toss: Viva Republica<br>· My Bankbook: Settlebank<br>· Chai: Chai Corporation<br>· Paycoin: Danal<br>· SSGPAY: SSG.COM<br>· Phone Pay: BC Card<br><br>- Provided Information<br>· Payment information (Phone number, product name, etc.) (Sugar Pay: including CI, user ID / Phone Pay: including CI, mobile number)<br><br>- Retention and Use Period<br>· Personal information is destroyed without delay when the purpose of collection and use is achieved<br>(However, stored in accordance with relevant laws if there are special provisions)<br><br>4) Purpose of Provision: Account transfer payment<br><br>- Recipient<br>· Banks: IBK, Kookmin, KEB Hana, Suhyup, Nonghyup, Woori, SC First, Citi, Daegu, Busan, Gwangju, Jeju, Jeonbuk, Kyongnam, Saemaul, Shinhyup, Post Office, Shinhan, Forestry Cooperative, KDB<br>· Securities: Yuanta, Hyundai, Mirae Asset, Korea Investment, Woori Investment, Hi Investment, HMC Investment, SK, Daishin, Hana Daetoo, Shinhan Financial, Dongbu, Eugene Investment, Meritz, Shinyoung, Samsung, Hanwha, Daewoo<br>· KFTC, Toss Payments<br>· CMS Account Transfer: Hyosung FMS<br><br>- Provided Information<br>· Payment information (Account number, name, DOB, etc.)<br><br>- Retention and Use Period<br>· Personal information is destroyed without delay when the purpose of collection and use is achieved<br>(However, stored in accordance with relevant laws if there are special provisions)<br><br>5) Purpose of Provision: Virtual account payment<br><br>- Recipient<br>· Banks: IBK, Kookmin, KEB Hana, Suhyup, Nonghyup, Woori, SC First, Shinhan, Busan, Gwangju, Post Office<br>· Toss Payments, Settlebank<br><br>- Provided Information<br>· Payment information (Virtual account number, etc.)<br><br>- Retention and Use Period<br>· Personal information is destroyed without delay when the purpose of collection and use is achieved<br>(However, stored in accordance with relevant laws if there are special provisions)<br><br>6) Purpose of Provision: Mobile phone payment<br><br>- Recipient<br>· Telecom: SKT, KT, LGU+, MVNO operators<br>· Mobilians, Galaxia Moneytree, Danal, NHN KCP<br><br>- Provided Information<br>· Payment information (Mobile number, DOB, gender, etc.)<br><br>- Retention and Use Period<br>· Personal information is destroyed without delay when the purpose of collection and use is achieved<br>(However, stored in accordance with relevant laws if there are special provisions)<br><br>7) Purpose of Provision: ARS phone bill payment<br><br>- Recipient<br>· KT, Mobilians<br><br>- Provided Information<br>· Payment information (Landline number, name, etc.)<br><br>- Retention and Use Period<br>· Personal information is destroyed without delay when the purpose of collection and use is achieved<br>(However, stored in accordance with relevant laws if there are special provisions)<br><br>8) Purpose of Provision: Point payment<br><br>- Recipient<br>· OK Cashbag: SK Marketing & Company<br>· Eco Mileage: BC Card, Seoul City<br><br>- Provided Information<br>· Payment information (Point card number, password, name, etc.)<br><br>- Retention and Use Period<br>· Personal information is destroyed without delay when the purpose of collection and use is achieved<br>(However, stored in accordance with relevant laws if there are special provisions)<br><br>9) Purpose of Provision: Gift certificate payment<br><br>- Recipient<br>· Happy Money: Happy Money Inc.<br>· Book & Life: Book & Life<br>· Cultureland: Cultureland<br><br>- Provided Information<br>· Payment information (Buyer ID, password, certificate number, etc.) (Cultureland, Happy Money: including IP)<br><br>- Retention and Use Period<br>· Personal information is destroyed without delay when the purpose of collection and use is achieved<br>(However, stored in accordance with relevant laws if there are special provisions)<br><br>10) Purpose of Provision: Cash receipt issuance<br><br>- Recipient<br>· National Tax Service<br><br>- Provided Information<br>· Unique identification information, mobile number, card number, name, etc.<br><br>- Retention and Use Period<br>· Personal information is destroyed without delay when the purpose of collection and use is achieved<br>(However, stored in accordance with relevant laws if there are special provisions)'
-                },
-                'zh': {
-                    'finance': '第一条 (目的)<br><br>本条款的目的是规定用户在利用CJ OliveNetworks股份有限公司(以下简称“公司”)提供的电子支付代理服务、预付电子支付手段发行及管理服务时，公司与用户之间关于电子金融交易的基本事项。<br><br>第二条 (术语的定义)<br><br>本条款中术语的定义如下：<br><br>1. “电子金融交易”指公司通过电子设备提供电子支付代理服务及预付电子支付手段发行与管理服务(以下简称“电子金融交易服务”)，用户在不与公司员工直接面对面或沟通的情况下，以自动化方式利用该等服务的交易。<br><br>2. “电子支付手段”指根据《电子金融交易法》第2条第11款规定的电子方法，以预付电子支付手段、信用卡等作为支付手段。<br><br>3. “电子支付代理服务”指在通过电子方式购买商品或使用服务时，发送或接收支付结算信息，或者代理/媒介其代价的结算的服务。<br><br>4. “预付电子支付手段”指公司在发行时事先向会员公告的《电子金融交易法》上的预付电子支付手段，例如在公司运营的网站及合作服务中可以购买商品或服务(以下简称“商品等”)的服务。<br><br>5. “充值”指通过公司指定的支付手段购买预付电子支付手段，或通过在公司或公司指定的第三方服务(以下简称“服务等”)中活动以确保预付电子支付手段的金额。<br><br>6. “用户”指同意本条款并利用公司提供的电子金融交易服务的人。<br><br>7. “访问介质”指《电子金融交易法》第2条第10款规定的，在电子金融交易中下达交易指示或为确保用户及交易内容的真实性与准确性而使用的手段或信息，包括电子卡、电子信息(含信用卡号)、证书、生物信息、密码等。<br><br>8. “交易指示”指用户根据本条款签订的电子金融交易合同，指示公司处理电子金融交易。<br><br>9. “错误”指非因用户的故意或过失，电子金融交易未按合同或用户的交易指示执行的情形。<br><br>10. “电子支付交易”指提供资金的人(支付人)通过公司使用电子支付手段将资金转移给收款人的电子金融交易。<br><br>11. “电子设备”指用于以电子方式传输或处理电子金融交易信息的设备，如ATM机、支付终端、电脑、电话等。<br><br>第三条 (条款的明示与变更)<br><br>1. 公司变更本条款时，应在变更的条款生效日1个月前，在处理电子金融交易的电子设备上公告变更内容并通知用户。<br>2. 因法令修改导致紧急变更条款时，应在电子设备上公告至少1个月以上并通知用户。<br>3. 用户如在变更条款生效日的前一营业日前未提出异议，即视为同意该变更。<br><br>第四条 (电子支付代理服务的种类)<br><br>1. 信用卡支付代理服务<br>2. 账户转账代理服务<br>3. 虚拟账户服务<br>4. 快捷支付服务<br>5. 其他(手机支付、ARS支付、礼品卡支付等)<br><br>第五条 (预付电子支付手段的充值与使用)<br><br>用户可通过公司指定的支付手段进行充值，并在购买商品时使用。<br><br>第六条 (预付电子支付手段的退款)<br><br>用户在规定条件下(如余额不足30%或因服务缺陷无法使用等)可要求全额退还预付余额。<br><br>第七条 (使用时间)<br><br>原则上公司全年365天24小时提供服务，但因系统维护或金融机构等原因可能暂时中断。<br><br>第八条 (访问介质的选取、使用及管理)<br><br>用户不得将访问介质借用、转让或提供给第三方，并应妥善保管以防盗用。<br><br>第九条至第十八条 (略，详细内容请参考韩文原文)',
-                    'privacy_collect': 'CJ OliveNetworks股份有限公司(以下简称“公司”)重视用户的个人信息，并遵守《电子金融交易法》、《个人信息保护法》等相关法律的规定，以保护用户权益。<br><br>1. 收集的个人信息项目<br><br>[必填项目]<br>用于确认身份及验证客户的收集信息：<br>· 个人：客户ID、姓名、出生日期、性别、地址、联系方式等<br>· 法人：法人名称、联系方式、代表姓名、国籍等<br><br>用于支付查询、客户咨询的收集信息：<br>· 信用卡：卡号、有效期<br>· 手机：通信公司名称、手机号码<br>· 账户转账：银行名称、账号<br>· 虚拟账户：银行名称、存款人姓名<br>· 其他支付手段相关的识别信息等<br><br>2. 个人信息收集及使用目的<br>1) 支付所购商品或服务的货款<br>2) 取消或退还交易款项<br>3) 防止非法及不良用户的使用<br>4) 根据相关法律履行客户确认义务<br><br>3. 个人信息的保留及使用期限<br>公司在达成个人信息的收集及使用目的后，原则上立即销毁该信息。但根据相关法令规定需要保存的，将依法保存(如《电子商务法》规定保存5年)。<br><br>4. 销毁程序与方法<br>电子文件形式的个人信息将采用无法恢复的不可逆技术方法进行彻底删除。',
-                    'privacy_provide': '1. CJ OliveNetworks股份有限公司(以下简称“公司”)未经用户事先同意，不会向第三方提供用户的个人信息(除法律要求外)。<br><br>2. 公司为履行服务向第三方提供个人信息的情况如下：<br><br>1) 目的：信用卡支付<br>- 接收方：各信用卡公司(国民、BC、乐天等)、银行、VAN公司、电子支付代理企业<br>- 提供信息：支付信息(卡号、姓名、联系方式等)<br><br>2) 目的：Sugar Pay (快捷支付)<br>- 接收方：NICE、Hecto Financial<br>- 提供信息：信用卡信息、账户信息等<br><br>3) 目的：快捷支付 (Kakao Pay, Naver Pay等)<br>- 接收方：各快捷支付运营公司<br>- 提供信息：电话号码、商品名称等<br><br>4) 目的：账户转账 / 虚拟账户 / 手机支付 / ARS支付 / 积分支付 / 礼品卡支付 / 现金收据发行<br>- 接收方：各银行、通信公司、韩国国税厅等<br>- 提供信息：用于处理相关支付所需的账号、手机号等<br><br>- 保留及使用期限：在达成目的后原则上立即销毁(法律有特别规定者除外)。'
-                },
-                'ja': {
-                    'finance': '第1条 (目的)<br><br>本規約の目的は、ユーザーがCJオリーブネットワークス(株)(以下「会社」)の提供する電子決済代行サービスおよび前払電子支払手段の発行・管理サービスを利用するにあたり、会社とユーザー間の電子金融取引に関する基本的な事項を定めることです。<br><br>第2条 (用語の定義)<br><br>本規約における用語の定義は以下の通りです。<br><br>1. 「電子金融取引」とは、会社が電子装置を通じて電子決済代行サービス等の電子金融取引サービスを提供し、ユーザーが自動化された方式でこれを利用する取引を意味します。<br><br>2. 「電子支払手段」とは、前払電子支払手段、クレジットカード等、電子金融取引法に定める電子的方法による支払手段を意味します。<br><br>3. 「電子決済代行サービス」とは、電子的方法による財貨の購入等における決済情報の送受信や代金精算を代行・媒介するサービスを意味します。<br><br>4. 「前払電子支払手段」とは、電子金融取引法上の前払電子支払手段を意味します。<br><br>5. 「チャージ」とは、会社が指定する支払手段を通じて前払電子支払手段を購入等して確保することを意味します。<br><br>6. 「ユーザー」とは、本規約に同意し、電子金融取引サービスを利用する者を意味します。<br><br>7. 「アクセス媒体」とは、取引指示等に使用される電子カード、暗証番号等の手段や情報を意味します。<br><br>第3条 (規約の明示および変更)<br><br>1. 会社が規約を変更する場合、変更施行日の1ヶ月前までに電子装置に掲示し通知します。<br>2. ユーザーが変更施行日の前営業日までに異議を唱えない場合、変更を承認したものとみなします。<br><br>第4条 (電子決済代行サービスの種類)<br><br>クレジットカード決済、口座振替、仮想口座、簡易決済サービス等があります。<br><br>第5条 (前払電子支払手段のチャージおよび利用)<br><br>ユーザーは指定された方法でチャージし、商品の購入代金として利用できます。<br><br>第6条 (前払電子支払手段の払い戻し)<br><br>サービス提供が困難になった場合や残高が30%未満の場合など、全額または残高の払い戻しを受けることができます。<br><br>第7条 (利用時間)<br><br>原則として年中無休24時間提供されますが、点検等により一時中断されることがあります。<br><br>第8条 (アクセス媒体の選定、使用および管理)<br><br>ユーザーはアクセス媒体を第三者に貸与・譲渡してはならず、盗用防止のため厳重に管理する必要があります。<br><br>第9条～第18条 (省略。詳細は韓国語の原文をご参照ください)',
-                    'privacy_collect': 'CJオリーブネットワークス(株)(以下「会社」)はユーザーの個人情報を重視し、「電子金融取引法」「個人情報保護法」等の関連法令を遵守して権益を保護しています。<br><br>1. 収集する個人情報の項目<br><br>[必須項目]<br>本人確認および検証のための情報：<br>・ 個人：顧客ID、氏名、生年月日、性別、住所、連絡先等<br>・ 法人：法人名、代表者名、連絡先等<br><br>決済履歴照会・顧客相談のための情報：<br>・ クレジットカード：カード番号、有効期限<br>・ 携帯電話：通信会社名、電話番号<br>・ 口座振替：銀行名、口座番号<br>・ 仮想口座：銀行名、入金者名<br>・ その他決済手段の識別情報等<br><br>2. 個人情報の収集・利用目的<br>1) 財貨・サービスの代金決済<br>2) 決済の取消または払い戻し<br>3) 不正利用の防止<br>4) 関連法令に基づく本人確認義務の履行等<br><br>3. 個人情報の保有および利用期間<br>目的達成後は遅滞なく破棄しますが、「電子商取引等における消費者保護に関する法律」等により保存が義務付けられている場合、法定期間(5年等)保存します。<br><br>4. 破棄手続きおよび方法<br>電子ファイル形式の個人情報は、記録を再生できない技術的方法を使用して完全に削除します。',
-                    'privacy_provide': '1. CJオリーブネットワークス(株)(以下「会社」)は、事前の同意なく個人情報を第三者に提供しません(法令により要求された場合を除く)。<br><br>2. 会社のサービス履行のため、以下の通り個人情報を第三者に提供します。<br><br>1) 目的：クレジットカード決済<br>- 提供先：カード会社、銀行、VAN会社、電子決済代行業者等<br>- 提供情報：決済情報(カード番号、氏名、連絡先等)<br><br>2) 目的：Sugar Pay (簡易決済)<br>- 提供先：NICE、ヘクトファイナンシャル等<br>- 提供情報：クレジットカード情報、口座情報等<br><br>3) 目的：簡易決済 (カカオペイ、ネイバーペイ等)<br>- 提供先：各簡易決済運営会社<br>- 提供情報：電話番号、商品名等<br><br>4) 目的：口座振替 / 仮想口座 / 携帯電話決済 / ポイント決済 / 商品券決済 / 現金領収書発行<br>- 提供先：銀行、通信会社、韓国国税庁等<br>- 提供情報：各決済処理に必要な口座番号や携帯電話番号等<br><br>- 保有および利用期間：目的達成後、原則として遅滞なく破棄します(法令に特別の規定がある場合を除く)。'
-                }
-            };
-
-            content.innerHTML = currentLang === 'ko' ? koTermsData[type] : transTermsData[currentLang][type];
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeTerms() {
-            const modal = document.getElementById('termsModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        // 약관 동의 검증 공통 함수
-        function validateTerms() {
-            // 결제 수단에 따라 검증할 약관 요소 선택 (카드는 인라인 약관 사용)
-            const itemSelector = (currentMethod === 'card') ? '.agree-item-inline' : '.agree-item';
-            const agreeItems = document.querySelectorAll(itemSelector);
-            const allAgreed = Array.from(agreeItems).every(item => item.checked);
-            
-            if (!allAgreed) {
-                alert('모든 필수 약관에 동의해주세요.');
-                
-                const modal = document.getElementById('paymentModal');
-                modal.classList.add('shake');
-                setTimeout(() => modal.classList.remove('shake'), 500);
-                
-                const firstUnchecked = Array.from(agreeItems).find(item => !item.checked);
-                if (firstUnchecked) {
-                    firstUnchecked.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                return false;
-            }
-            return true;
-        }
-
-        // 결제 처리
-        function processPayment() {
-            // 카드 결제 시 카드사 선택 확인
-            if (currentMethod === 'card' && !selectedCardCompany) {
-                alert('카드사를 먼저 선택해주세요.');
-                return;
-            }
-            
-            // 약관 동의 확인 (공통 함수 사용)
-            if (!validateTerms()) return;
-
-            // 카드 결제 flow - 1단계(약관 동의)에서 2단계(할부 선택)로 이동
-            if (currentMethod === 'card' && currentCardStep === 1) {
-                document.getElementById('cardCompanySelection').classList.add('hidden');
-                document.getElementById('installmentSelection').classList.remove('hidden');
-                document.getElementById('footerSection').classList.add('hidden');
-                
-                // 버튼 색상 초기화 (나중을 위해 레드로 미리 준비)
-                const btn = document.getElementById('payBtn');
-                btn.classList.add('bg-[--cj-red]', 'hover:bg-[#c11f17]');
-                btn.classList.remove('bg-[--cj-blue]', 'hover:bg-[#002a6d]');
-                
-                currentCardStep = 2;
-                return;
-            }
-            
-            // 결제 처리 시작 (간편결제 및 기타 수단)
-            const btn = document.getElementById('payBtn');
-            const btnText = document.getElementById('btnText');
-            const btnLoader = document.getElementById('btnLoader');
-            const amount = "125,000원";
-            
-            btn.disabled = true;
-            btnText.textContent = '결제 요청 중...';
-            btnLoader.classList.remove('hidden');
-            
-            
-            // 시뮬레이션: 1.5초 후 성공 팝업 표시
-            setTimeout(() => {
-                btn.disabled = false;
-                btnText.textContent = `${amount} 결제하기`;
-                btnLoader.classList.add('hidden');
-                
-                // 성공 팝업 표시
-                showSuccessPopup();
-            }, 1500);
-        }
-
-        function getMethodName(method) {
-            const names = {
-                'card': '신용카드',
-                'transfer': '계좌이체',
-                'virtual': '가상계좌',
-                'phone': '휴대폰결제',
-                'kakao': '카카오페이',
-                'naver': '네이버페이',
-                'toss': '토스페이',
-                'payco': '페이코'
-            };
-            return names[method] || method;
-        }
-
-        function closeModal() {
-            const t = i18n[currentLang];
-            if (confirm(t.cancelConfirm || '결제를 취소하시겠습니까?\n입력하신 정보는 저장되지 않습니다.')) {
-                document.getElementById('paymentModal').style.display = 'none';
-                setTimeout(() => {
-                    alert(t.cancelAlert || '결제창이 닫혔습니다.');
-                    location.reload();
-                }, 100);
-            }
-        }
-
-        // 은행/통신사 버튼 선택 효과
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.bank-btn')) {
-                document.querySelectorAll('.bank-btn').forEach(btn => {
-                    btn.classList.remove('border-primary', 'bg-blue-50', 'border-purple-500', 'bg-purple-50');
-                    btn.classList.add('border-gray-200');
-                });
-                const btn = e.target.closest('.bank-btn');
-                btn.classList.remove('border-gray-200');
-                if (currentMethod === 'virtual') {
-                    btn.classList.add('border-purple-500', 'bg-purple-50');
-                } else {
-                    btn.classList.add('border-primary', 'bg-blue-50');
-                }
-            }
-            
-            if (e.target.closest('.carrier-btn')) {
-                document.querySelectorAll('.carrier-btn').forEach(btn => {
-                    btn.classList.remove('border-orange-500', 'bg-orange-50');
-                    btn.classList.add('border-gray-200');
-                });
-                const btn = e.target.closest('.carrier-btn');
-                btn.classList.remove('border-gray-200');
-                btn.classList.add('border-orange-500', 'bg-orange-50');
-            }
-        });
-
-        // 해외카드 더보기 토글
-        function toggleOverseasCardCompanies() {
-            const overseasCards = document.getElementById('overseasCardCompanies');
-            const toggleBtn = document.getElementById('toggleOverseasCards');
-            
-            if (overseasCards.classList.contains('hidden')) {
-                overseasCards.classList.remove('hidden');
-                overseasCards.classList.add('animate-fade-in');
-                toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> <span>접기</span>';
-                
-                // 스크롤 자동 이동 (펼쳤을 때 화면에 잘 보이도록 더 아래로 스크롤)
-                setTimeout(() => {
-                    overseasCards.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-            } else {
-                overseasCards.classList.add('hidden');
-                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> <span>해외카드 더보기</span>';
-            }
-        }
-
-        // 모달 외부 클릭 시 닫기
-        document.getElementById('termsModal').addEventListener('click', function(e) {
-            if (e.target === this) closeTerms();
-        });
-    </script>
+          <button type="button" class="complete-confirm" data-i18n="complete.confirm">확인</button>
+        </div>
+      </div>
+      <!-- //결제 완료 modal -->
+    </main>
+  </div>
 </body>
+
+
+
 </html>
