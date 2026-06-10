@@ -27,21 +27,26 @@ function initCloseButton() {
   });
 }
 
+function closeLangDropdown(langSelect) {
+  if (langSelect) {
+    langSelect.classList.remove("active");
+  }
+}
+
 function initLanguageSelector() {
-  var langBtnText = document.querySelector(".lang-btn span");
-  var langLinks = document.querySelectorAll(".lang-link");
+  var langSelect = document.querySelector(".lang-select");
+  if (!langSelect) return;
 
-  if (!langLinks.length) return;
+  var newLangSelect = langSelect.cloneNode(true);
+  langSelect.parentNode.replaceChild(newLangSelect, langSelect);
+  langSelect = newLangSelect;
 
-  langLinks.forEach(function (item) {
-    var newItem = item.cloneNode(true);
-    item.parentNode.replaceChild(newItem, item);
-  });
-
-  var freshLangLinks = document.querySelectorAll(".lang-link");
+  var langBtn = langSelect.querySelector(".lang-btn");
+  var langBtnText = langSelect.querySelector(".lang-btn span");
+  var langLinks = langSelect.querySelectorAll(".lang-link");
 
   function setActiveLangLink(lang) {
-    freshLangLinks.forEach(function (item) {
+    langLinks.forEach(function (item) {
       item.classList.toggle("active", item.dataset.lang === lang);
     });
 
@@ -50,9 +55,15 @@ function initLanguageSelector() {
     }
   }
 
-  setActiveLangLink(window.I18n.getLanguage());
+  if (langBtn) {
+    langBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      langSelect.classList.toggle("active");
+    });
+  }
 
-  freshLangLinks.forEach(function (item) {
+  langLinks.forEach(function (item) {
     item.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -62,10 +73,22 @@ function initLanguageSelector() {
 
       window.I18n.setLanguage(targetLang);
       setActiveLangLink(targetLang);
+      closeLangDropdown(langSelect);
     });
+  });
+
+  langSelect.addEventListener("click", function (e) {
+    e.stopPropagation();
+  });
+
+  document.addEventListener("click", function () {
+    closeLangDropdown(langSelect);
   });
 
   document.addEventListener("languageChanged", function (e) {
     setActiveLangLink(e.detail.lang);
+    closeLangDropdown(langSelect);
   });
+
+  setActiveLangLink(window.I18n.getLanguage());
 }
